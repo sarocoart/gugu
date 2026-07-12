@@ -97,7 +97,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             title={app.title}
             style={{
               width: "100%",
-              height: "62vh",
+              height: "min(62vh, 560px)",
               border: `1px solid ${colors.line}`,
               borderRadius: 18,
               background: colors.surface,

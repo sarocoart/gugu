@@ -12,8 +12,21 @@ export type GuguApp = {
   biltProductId?: string; // 빌트마켓 연동용 자리 (지금은 비움)
 };
 
-// 작품 목록 — 새 작품을 올리려면 여기에 한 덩어리 추가하면 끝!
-// url에 배포된 주소를 넣으면 실행 화면에서 바로 열립니다.
+// ============================================================
+// 작품 목록 — 새 작품을 올리려면 아래에 한 덩어리 추가하면 끝!
+//
+// 추가 예시 (복사해서 쓰세요):
+// {
+//   id: "my-app",              // 영문, 겹치지 않게
+//   title: "내 멋진 앱",
+//   desc: "한 줄 소개",
+//   category: "game",          // game / test / tool / make / study / fun
+//   emoji: "🎯",
+//   url: "https://내앱주소",
+//   maker: "제작자 이름",
+//   minutes: 3,
+// },
+// ============================================================
 export const apps: GuguApp[] = [
   {
     id: "mbti-test",
@@ -24,54 +37,6 @@ export const apps: GuguApp[] = [
     url: "https://marketplace-lake-one.vercel.app",
     maker: "구구",
     minutes: 3,
-  },
-  {
-    id: "fruit-match",
-    title: "과일 짝맞추기",
-    desc: "같은 과일을 찾아요. 쉬워요!",
-    category: "game",
-    emoji: "🍎",
-    url: "",
-    maker: "구구",
-    minutes: 5,
-  },
-  {
-    id: "allowance-calc",
-    title: "용돈 계산기",
-    desc: "한 달 용돈을 계획해 봐요",
-    category: "tool",
-    emoji: "🧮",
-    url: "",
-    maker: "구구",
-  },
-  {
-    id: "profile-maker",
-    title: "프로필 그림 만들기",
-    desc: "나만의 귀여운 프로필을 만들어요",
-    category: "make",
-    emoji: "🎨",
-    url: "",
-    maker: "구구",
-  },
-  {
-    id: "word-quiz",
-    title: "낱말 퀴즈",
-    desc: "오늘의 낱말, 맞혀 볼까요?",
-    category: "study",
-    emoji: "📚",
-    url: "",
-    maker: "구구",
-    minutes: 5,
-  },
-  {
-    id: "balance-game",
-    title: "밸런스 게임",
-    desc: "둘 중 하나만 골라야 한다면?",
-    category: "fun",
-    emoji: "⚖️",
-    url: "",
-    maker: "구구",
-    minutes: 2,
   },
 ];
 

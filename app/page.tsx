@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
+import BigTextToggle from "@/components/BigTextToggle";
 import { apps } from "@/lib/data";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
@@ -20,8 +21,12 @@ export default function HomePage() {
           padding: "24px 20px 28px",
           textAlign: "center",
           borderRadius: "0 0 28px 28px",
+          position: "relative",
         }}
       >
+        <div className="gugu-mobile-only" style={{ position: "absolute", top: 16, right: 16 }}>
+          <BigTextToggle />
+        </div>
         <Pigeon size={88} mood="hello" />
         <h1 style={{ margin: "10px 0 2px", fontSize: font.title, fontWeight: 700, color: colors.text }}>
           {labels.serviceName}
@@ -33,7 +38,7 @@ export default function HomePage() {
         <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
           {labels.categoriesTitle}
         </h2>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+        <div className="gugu-chips">
           {categories.map((c) => (
             <CategoryChip
               key={c.id}
@@ -50,7 +55,7 @@ export default function HomePage() {
         <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
           {labels.todayTitle}
         </h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="gugu-list">
           {featured.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}

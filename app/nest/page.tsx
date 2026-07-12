@@ -74,7 +74,7 @@ export default function NestPage() {
           <RunButton label={`${labels.explore} 가기`} onClick={() => router.push("/explore")} />
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0 16px" }}>
+        <div className="gugu-list" style={{ padding: "0 16px" }}>
           {list.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}

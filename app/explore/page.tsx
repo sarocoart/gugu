@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, type ChangeEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
@@ -30,7 +30,7 @@ function ExploreContent() {
 
       <input
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         placeholder="무엇을 찾고 있나요?"
         style={{
           width: "100%",
@@ -46,7 +46,7 @@ function ExploreContent() {
         }}
       />
 
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }}>
+      <div className="gugu-chips" style={{ marginBottom: 14 }}>
         <CategoryChip name={labels.allCategory} active={cat === "all"} onClick={() => setCat("all")} />
         {categories.map((c) => (
           <CategoryChip
@@ -65,7 +65,7 @@ function ExploreContent() {
           <p style={{ fontSize: font.body, color: colors.textSub }}>찾는 작품이 없구구.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="gugu-list">
           {list.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}

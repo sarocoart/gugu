@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { labels } from "@/lib/labels";
 import { colors } from "@/lib/theme";
+import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import "./globals.css";
 
@@ -13,14 +14,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body style={{ background: colors.bg }}>
-        <main
-          style={{
-            maxWidth: 480,
-            margin: "0 auto",
-            minHeight: "100vh",
-            paddingBottom: 72,
-          }}
-        >
+        <TopNav />
+        <main className="gugu-shell" style={{ paddingBottom: 72 }}>
           {children}
         </main>
         <BottomNav />

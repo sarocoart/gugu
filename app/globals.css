@@ -22,3 +22,75 @@ button:active {
 a {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ============================================================
+   반응형 기준선 — 이 파일이 PC/모바일 전환의 유일한 관리처입니다.
+   화면 폭 760px을 기준으로 브라우저가 자동으로 배치를 바꿉니다.
+   JavaScript 판단 없이 CSS만으로 처리 -> 에러가 날 곳이 없습니다.
+   ============================================================ */
+
+.gugu-shell {
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.gugu-topnav {
+  display: none;
+}
+
+.gugu-bottomnav {
+  display: flex;
+}
+
+.gugu-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.gugu-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+@media (min-width: 760px) {
+  .gugu-shell {
+    max-width: 1120px;
+    padding: 0 24px;
+    padding-bottom: 0;
+  }
+
+  .gugu-topnav {
+    display: flex;
+  }
+
+  .gugu-bottomnav {
+    display: none;
+  }
+
+  .gugu-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .gugu-chips {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+html[data-big="true"] {
+  font-size: 18.4px;
+}
+
+/* 모바일에서만 보이는 요소 (PC엔 상단 바가 있으니 숨김) */
+.gugu-mobile-only {
+  display: block;
+}
+@media (min-width: 760px) {
+  .gugu-mobile-only {
+    display: none;
+  }
+}
