@@ -95,12 +95,3 @@ a {
 }
 
 
-/* 모바일에서만 보이는 요소 (PC엔 상단 바가 있으니 숨김) */
-.gugu-mobile-only {
-  display: block;
-}
-@media (min-width: 760px) {
-  .gugu-mobile-only {
-    display: none;
-  }
-}

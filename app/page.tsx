@@ -31,17 +31,6 @@ function HomeContent() {
 
   return (
     <div style={{ padding: "16px 16px 24px" }}>
-      {/* 모바일에서만 보이는 작은 브랜드 줄 (PC엔 상단 바가 있어서 숨김) */}
-      <div
-        className="gugu-mobile-only"
-        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}
-      >
-        <Pigeon size={40} mood="hello" />
-        <span style={{ fontSize: font.title, fontWeight: 700, color: colors.text }}>
-          {labels.serviceName}
-        </span>
-      </div>
-
       <input
         value={query}
         onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
