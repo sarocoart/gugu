@@ -1,17 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
 import BigTextToggle from "@/components/BigTextToggle";
-import { apps } from "@/lib/data";
+import type { GuguApp } from "@/lib/data";
+import { getAllApps } from "@/lib/catalog";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
 export default function HomePage() {
   const router = useRouter();
-  const featured = apps.slice(0, 3);
+  const [featured, setFeatured] = useState<GuguApp[]>([]);
+
+  useEffect(() => {
+    setFeatured(getAllApps().slice(0, 6));
+  }, []);
 
   return (
     <div>
@@ -55,7 +61,7 @@ export default function HomePage() {
         <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
           {labels.todayTitle}
         </h2>
-        <div className="gugu-list">
+        <div className="gugu-grid">
           {featured.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}

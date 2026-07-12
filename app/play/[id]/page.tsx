@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
-import { getApp } from "@/lib/data";
+import type { GuguApp } from "@/lib/data";
+import { findApp } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
@@ -12,15 +13,28 @@ import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
 
 export default function PlayPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const app = getApp(params.id);
+  const [app, setApp] = useState<GuguApp | undefined>(undefined);
+  const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (app) {
-      setSaved(isSaved(app.id));
-      if (app.url) markPlayed(app.id);
+    const found = findApp(params.id);
+    setApp(found);
+    setReady(true);
+    if (found) {
+      setSaved(isSaved(found.id));
+      if (found.url) markPlayed(found.id);
     }
-  }, [app]);
+  }, [params.id]);
+
+  if (!ready) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px" }}>
+        <Pigeon size={90} mood="hello" />
+        <p style={{ fontSize: font.body, color: colors.textSub }}>잠깐만요 구구...</p>
+      </div>
+    );
+  }
 
   if (!app) {
     return (

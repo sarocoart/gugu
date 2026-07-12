@@ -5,7 +5,8 @@ export type GuguApp = {
   title: string;
   desc: string;        // 한 줄 소개
   category: CategoryId;
-  emoji: string;       // 임시 썸네일 (나중에 이미지로 교체)
+  emoji: string;       // 임시 썸네일 (그림이 없을 때 표시)
+  image?: string;      // 카드에 보일 그림 주소 (있으면 이모지 대신 표시)
   url: string;         // 실행 URL — 비워두면 "준비 중" 표시
   maker: string;       // 제작자 이름
   minutes?: number;    // 소요 시간(분), 선택

@@ -48,6 +48,13 @@ a {
   gap: 10px;
 }
 
+/* 큰 그림 카드 격자 (홈·구경) — 휴대폰에선 2개씩 */
+.gugu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
 .gugu-chips {
   display: flex;
   gap: 8px;
@@ -73,6 +80,12 @@ a {
   .gugu-list {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 14px;
+  }
+
+  /* PC에선 카드가 3~4개씩 넓게 */
+  .gugu-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
   }
 
   .gugu-chips {

@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useState, type ChangeEvent } from "react";
+import { Suspense, useState, useEffect, type ChangeEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
 import Pigeon from "@/components/Pigeon";
-import { apps } from "@/lib/data";
+import type { GuguApp } from "@/lib/data";
+import { getAllApps } from "@/lib/catalog";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
@@ -14,6 +15,11 @@ function ExploreContent() {
   const initialCat = params.get("cat") ?? "all";
   const [cat, setCat] = useState<string>(initialCat);
   const [query, setQuery] = useState("");
+  const [apps, setApps] = useState<GuguApp[]>([]);
+
+  useEffect(() => {
+    setApps(getAllApps());
+  }, []);
 
   const list = apps.filter((a) => {
     const catOk = cat === "all" || a.category === cat;
@@ -65,7 +71,7 @@ function ExploreContent() {
           <p style={{ fontSize: font.body, color: colors.textSub }}>찾는 작품이 없구구.</p>
         </div>
       ) : (
-        <div className="gugu-list">
+        <div className="gugu-grid">
           {list.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}

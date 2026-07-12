@@ -3,30 +3,58 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
-import AppCard from "@/components/AppCard";
+import NestCard from "@/components/NestCard";
 import RunButton from "@/components/RunButton";
-import { apps } from "@/lib/data";
+import type { GuguApp } from "@/lib/data";
+import { findApp } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { getSaved, getPlayed } from "@/lib/storage";
+import {
+  getSaved,
+  getPlayed,
+  getMyApps,
+  removeSaved,
+  removePlayed,
+  removeMyApp,
+} from "@/lib/storage";
 
-type Tab = "saved" | "played";
+type Tab = "saved" | "played" | "mine";
 
 export default function NestPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("saved");
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [playedIds, setPlayedIds] = useState<string[]>([]);
+  const [myApps, setMyApps] = useState<GuguApp[]>([]);
 
-  useEffect(() => {
+  // 저장소에서 현재 상태를 다시 읽어옵니다 (삭제 후에도 호출).
+  const refresh = () => {
     setSavedIds(getSaved());
     setPlayedIds(getPlayed());
+    setMyApps(getMyApps());
+  };
+
+  useEffect(() => {
+    refresh();
   }, []);
 
-  const ids = tab === "saved" ? savedIds : playedIds;
-  const list = ids
-    .map((id) => apps.find((a) => a.id === id))
-    .filter((a): a is (typeof apps)[number] => Boolean(a));
+  // 현재 탭에 보여줄 작품 목록
+  let list: GuguApp[] = [];
+  if (tab === "saved") {
+    list = savedIds.map((id) => findApp(id)).filter((a): a is GuguApp => Boolean(a));
+  } else if (tab === "played") {
+    list = playedIds.map((id) => findApp(id)).filter((a): a is GuguApp => Boolean(a));
+  } else {
+    list = myApps;
+  }
+
+  // 탭마다 지우는 곳이 다릅니다.
+  const handleRemove = (id: string) => {
+    if (tab === "saved") removeSaved(id);
+    else if (tab === "played") removePlayed(id);
+    else removeMyApp(id);
+    refresh();
+  };
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -39,6 +67,9 @@ export default function NestPage() {
     fontWeight: 600,
     cursor: "pointer",
   });
+
+  const emptyText =
+    tab === "saved" ? labels.emptyNest : tab === "played" ? labels.emptyPlayed : "아직 올린 작품이 없구구!";
 
   return (
     <div>
@@ -56,27 +87,34 @@ export default function NestPage() {
         </h1>
       </header>
 
-      <div style={{ display: "flex", gap: 10, padding: 16 }}>
+      <div style={{ display: "flex", gap: 8, padding: 16 }}>
         <button style={tabStyle(tab === "saved")} onClick={() => setTab("saved")}>
           💛 {labels.saved} {savedIds.length > 0 ? savedIds.length : ""}
         </button>
         <button style={tabStyle(tab === "played")} onClick={() => setTab("played")}>
           ▶️ {labels.played} {playedIds.length > 0 ? playedIds.length : ""}
         </button>
+        <button style={tabStyle(tab === "mine")} onClick={() => setTab("mine")}>
+          ✨ {labels.myUploads} {myApps.length > 0 ? myApps.length : ""}
+        </button>
+      </div>
+
+      <div style={{ padding: "0 16px 12px" }}>
+        <RunButton wide label={`＋ ${labels.uploadButton}`} onClick={() => router.push("/upload")} />
       </div>
 
       {list.length === 0 ? (
         <div style={{ textAlign: "center", padding: "32px 20px" }}>
           <Pigeon size={80} mood="empty" />
-          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 16px" }}>
-            {tab === "saved" ? labels.emptyNest : labels.emptyPlayed}
-          </p>
-          <RunButton label={`${labels.explore} 가기`} onClick={() => router.push("/explore")} />
+          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 16px" }}>{emptyText}</p>
+          {tab !== "mine" && (
+            <RunButton label={`${labels.explore} 가기`} onClick={() => router.push("/explore")} />
+          )}
         </div>
       ) : (
         <div className="gugu-list" style={{ padding: "0 16px" }}>
           {list.map((app) => (
-            <AppCard key={app.id} app={app} />
+            <NestCard key={app.id} app={app} onRemove={handleRemove} />
           ))}
         </div>
       )}
