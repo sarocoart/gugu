@@ -108,7 +108,7 @@ export default function NestPage() {
           <Pigeon size={80} mood="empty" />
           <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 16px" }}>{emptyText}</p>
           {tab !== "mine" && (
-            <RunButton label={`${labels.explore} 가기`} onClick={() => router.push("/explore")} />
+            <RunButton label="작품 보러 가기" onClick={() => router.push("/")} />
           )}
         </div>
       ) : (

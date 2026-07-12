@@ -1,72 +1,98 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Pigeon from "@/components/Pigeon";
+import { Suspense, useState, useEffect, type ChangeEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
-import BigTextToggle from "@/components/BigTextToggle";
+import Pigeon from "@/components/Pigeon";
 import type { GuguApp } from "@/lib/data";
 import { getAllApps } from "@/lib/catalog";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
-export default function HomePage() {
-  const router = useRouter();
-  const [featured, setFeatured] = useState<GuguApp[]>([]);
+// 첫 화면 = 검색 + 카테고리 + 전체 작품. (구경 화면과 합쳤습니다)
+function HomeContent() {
+  const params = useSearchParams();
+  const initialCat = params.get("cat") ?? "all";
+  const [cat, setCat] = useState<string>(initialCat);
+  const [query, setQuery] = useState("");
+  const [apps, setApps] = useState<GuguApp[]>([]);
 
   useEffect(() => {
-    setFeatured(getAllApps().slice(0, 6));
+    setApps(getAllApps());
   }, []);
 
+  const list = apps.filter((a) => {
+    const catOk = cat === "all" || a.category === cat;
+    const q = query.trim();
+    const queryOk = q === "" || a.title.includes(q) || a.desc.includes(q);
+    return catOk && queryOk;
+  });
+
   return (
-    <div>
-      <header
-        style={{
-          background: colors.mocha,
-          padding: "24px 20px 28px",
-          textAlign: "center",
-          borderRadius: "0 0 28px 28px",
-          position: "relative",
-        }}
+    <div style={{ padding: "16px 16px 24px" }}>
+      {/* 모바일에서만 보이는 작은 브랜드 줄 (PC엔 상단 바가 있어서 숨김) */}
+      <div
+        className="gugu-mobile-only"
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}
       >
-        <div className="gugu-mobile-only" style={{ position: "absolute", top: 16, right: 16 }}>
-          <BigTextToggle />
-        </div>
-        <Pigeon size={88} mood="hello" />
-        <h1 style={{ margin: "10px 0 2px", fontSize: font.title, fontWeight: 700, color: colors.text }}>
+        <Pigeon size={40} mood="hello" />
+        <span style={{ fontSize: font.title, fontWeight: 700, color: colors.text }}>
           {labels.serviceName}
-        </h1>
-        <p style={{ margin: 0, fontSize: font.body, color: colors.textSub }}>{labels.tagline}</p>
-      </header>
+        </span>
+      </div>
 
-      <section style={{ padding: "20px 16px 8px" }}>
-        <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
-          {labels.categoriesTitle}
-        </h2>
-        <div className="gugu-chips">
-          {categories.map((c) => (
-            <CategoryChip
-              key={c.id}
-              name={c.name}
-              icon={c.icon}
-              active={false}
-              onClick={() => router.push(`/explore?cat=${c.id}`)}
-            />
-          ))}
+      <input
+        value={query}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+        placeholder="무엇을 해볼까요? 이름으로 찾아요"
+        style={{
+          width: "100%",
+          height: 52,
+          borderRadius: 26,
+          border: `1px solid ${colors.line}`,
+          background: colors.surface,
+          padding: "0 20px",
+          fontSize: font.body,
+          color: colors.text,
+          outline: "none",
+          marginBottom: 14,
+        }}
+      />
+
+      <div className="gugu-chips" style={{ marginBottom: 16 }}>
+        <CategoryChip name={labels.allCategory} active={cat === "all"} onClick={() => setCat("all")} />
+        {categories.map((c) => (
+          <CategoryChip
+            key={c.id}
+            name={c.name}
+            icon={c.icon}
+            active={cat === c.id}
+            onClick={() => setCat(c.id)}
+          />
+        ))}
+      </div>
+
+      {list.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <Pigeon size={80} mood="empty" />
+          <p style={{ fontSize: font.body, color: colors.textSub }}>찾는 작품이 없구구.</p>
         </div>
-      </section>
-
-      <section style={{ padding: "12px 16px" }}>
-        <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
-          {labels.todayTitle}
-        </h2>
+      ) : (
         <div className="gugu-grid">
-          {featured.map((app) => (
+          {list.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}
         </div>
-      </section>
+      )}
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense>
+      <HomeContent />
+    </Suspense>
   );
 }

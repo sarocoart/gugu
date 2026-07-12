@@ -4,12 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import BigTextToggle from "./BigTextToggle";
 
 // 하단 바와 같은 메뉴를 씁니다 — 한 곳(navItems)에서 관리하려고 분리했어요.
 export const navItems = [
   { href: "/", label: labels.home, icon: "🏠" },
-  { href: "/explore", label: labels.explore, icon: "🔍" },
   { href: "/nest", label: labels.mypage, icon: "🕊️" },
 ];
 
@@ -59,7 +57,6 @@ export default function TopNav() {
           </Link>
         );
       })}
-      <BigTextToggle />
     </nav>
   );
 }
