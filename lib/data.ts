@@ -10,6 +10,7 @@ export type GuguApp = {
   url: string;         // 실행 URL — 비워두면 "준비 중" 표시
   maker: string;       // 제작자 이름
   minutes?: number;    // 소요 시간(분), 선택
+  createdAt?: number;  // 올린 시각 — 7일 안이면 NEW 배지가 붙어요
   biltProductId?: string; // 빌트마켓 연동용 자리 (지금은 비움)
 };
 

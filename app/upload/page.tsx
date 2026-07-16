@@ -79,6 +79,7 @@ export default function UploadPage() {
       image: image.trim() || undefined,
       url: url.trim(),
       maker: maker.trim(),
+      createdAt: Date.now(),
     };
     addMyApp(newApp);
     router.push("/nest");

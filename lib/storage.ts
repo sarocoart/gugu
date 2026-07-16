@@ -49,6 +49,30 @@ export function removeSaved(id: string) {
   write(SAVED_KEY, read(SAVED_KEY).filter((x) => x !== id));
 }
 
+// 담은 것에 바로 추가 (추천 목록의 "담기" 버튼용)
+export function addSaved(id: string) {
+  const ids = read(SAVED_KEY).filter((x) => x !== id);
+  write(SAVED_KEY, [id, ...ids]);
+}
+
+// 전체 비우기 (탭별 "전체 비우기" 버튼용)
+export function clearSaved() {
+  write(SAVED_KEY, []);
+}
+
+export function clearPlayed() {
+  write(PLAYED_KEY, []);
+}
+
+export function clearMyApps() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(MYAPPS_KEY, JSON.stringify([]));
+  } catch {
+    // 무시
+  }
+}
+
 // ---- 해본 것 ----
 export function getPlayed(): string[] {
   return read(PLAYED_KEY);

@@ -16,6 +16,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const [app, setApp] = useState<GuguApp | undefined>(undefined);
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const found = findApp(params.id);
@@ -48,6 +49,28 @@ export default function PlayPage({ params }: { params: { id: string } }) {
 
   const openNewTab = () => {
     if (app.url) window.open(app.url, "_blank", "noopener");
+  };
+
+  // 공유하기 — 휴대폰에선 기기 공유창(카톡 포함)이 열리고,
+  // 공유창이 없는 환경(PC 등)에선 링크가 복사됩니다.
+  const share = async () => {
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `구구마켓 — ${app.title}`, url: shareUrl });
+        return;
+      }
+    } catch {
+      // 사용자가 공유창을 닫은 경우 등 — 아무것도 안 해도 됩니다.
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // 복사가 안 되는 환경이면 조용히 넘어갑니다.
+    }
   };
 
   return (
@@ -102,6 +125,24 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             {saved ? "💛 담음" : `🤍 ${labels.save}`}
           </button>
         )}
+        <button
+          onClick={share}
+          aria-label="공유하기"
+          style={{
+            height: 44,
+            padding: "0 16px",
+            borderRadius: 22,
+            border: "none",
+            background: colors.surface,
+            color: colors.text,
+            fontSize: font.body,
+            fontWeight: 600,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          {copied ? "복사됨 ✓" : "📤 공유"}
+        </button>
       </div>
 
       {app.url ? (
@@ -131,6 +172,23 @@ export default function PlayPage({ params }: { params: { id: string } }) {
           </p>
         </div>
       )}
+
+      {/* 공유 링크로 온 사람을 구구마켓 구경으로 데려오는 배너 */}
+      <div
+        style={{
+          margin: "8px 16px 24px",
+          padding: "20px 16px",
+          borderRadius: 20,
+          background: colors.mint,
+          textAlign: "center",
+        }}
+      >
+        <Pigeon size={56} mood="hello" />
+        <p style={{ margin: "8px 0 12px", fontSize: font.body, fontWeight: 600, color: colors.mintText }}>
+          재밌는 작품이 더 많아요!
+        </p>
+        <RunButton label="구구마켓 구경 가기" onClick={() => router.push("/")} />
+      </div>
     </div>
   );
 }

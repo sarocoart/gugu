@@ -11,6 +11,8 @@ import { colors, font } from "@/lib/theme";
 export default function AppCard({ app }: { app: GuguApp }) {
   const router = useRouter();
   const cat = categories.find((c) => c.id === app.category);
+  // 올린 지 7일 안이면 NEW 배지를 붙입니다.
+  const isNew = app.createdAt !== undefined && Date.now() - app.createdAt < 7 * 24 * 60 * 60 * 1000;
 
   return (
     <button
@@ -26,8 +28,27 @@ export default function AppCard({ app }: { app: GuguApp }) {
         padding: 0,
         overflow: "hidden",
         cursor: "pointer",
+        position: "relative",
       }}
     >
+      {isNew && (
+        <span
+          style={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            padding: "4px 10px",
+            borderRadius: 12,
+            background: colors.orange,
+            color: "#FFFFFF",
+            fontSize: 12,
+            fontWeight: 700,
+            zIndex: 1,
+          }}
+        >
+          NEW
+        </span>
+      )}
       <div
         aria-hidden="true"
         style={{

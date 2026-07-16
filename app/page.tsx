@@ -7,6 +7,7 @@ import CategoryChip from "@/components/CategoryChip";
 import Pigeon from "@/components/Pigeon";
 import type { GuguApp } from "@/lib/data";
 import { getAllApps } from "@/lib/catalog";
+import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
@@ -19,7 +20,15 @@ function HomeContent() {
   const [apps, setApps] = useState<GuguApp[]>([]);
 
   useEffect(() => {
-    setApps(getAllApps());
+    // 최근에 본 작품이 앞에 오도록 정렬합니다.
+    // getPlayed()는 최근 본 순서대로 id를 돌려줘요.
+    const all = getAllApps();
+    const playedIds = getPlayed();
+    const rank = (a: GuguApp) => {
+      const i = playedIds.indexOf(a.id);
+      return i === -1 ? playedIds.length : i; // 본 적 없으면 뒤로
+    };
+    setApps([...all].sort((a, b) => rank(a) - rank(b)));
   }, []);
 
   const list = apps.filter((a) => {

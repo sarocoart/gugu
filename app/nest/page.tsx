@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import NestCard from "@/components/NestCard";
+import SuggestCard from "@/components/SuggestCard";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
-import { findApp } from "@/lib/catalog";
+import { findApp, getAllApps } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import {
@@ -16,6 +17,10 @@ import {
   removeSaved,
   removePlayed,
   removeMyApp,
+  addSaved,
+  clearSaved,
+  clearPlayed,
+  clearMyApps,
 } from "@/lib/storage";
 
 type Tab = "saved" | "played" | "mine";
@@ -26,17 +31,26 @@ export default function NestPage() {
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [playedIds, setPlayedIds] = useState<string[]>([]);
   const [myApps, setMyApps] = useState<GuguApp[]>([]);
+  const [allApps, setAllApps] = useState<GuguApp[]>([]);
+  const [clearing, setClearing] = useState(false); // "전체 비우기" 확인창 표시 여부
 
-  // 저장소에서 현재 상태를 다시 읽어옵니다 (삭제 후에도 호출).
+  // 저장소에서 현재 상태를 다시 읽어옵니다 (담기/삭제 후에도 호출).
   const refresh = () => {
     setSavedIds(getSaved());
     setPlayedIds(getPlayed());
     setMyApps(getMyApps());
+    setAllApps(getAllApps());
   };
 
   useEffect(() => {
     refresh();
   }, []);
+
+  // 탭이 바뀌면 확인창은 닫습니다.
+  const switchTab = (t: Tab) => {
+    setTab(t);
+    setClearing(false);
+  };
 
   // 현재 탭에 보여줄 작품 목록
   let list: GuguApp[] = [];
@@ -53,6 +67,23 @@ export default function NestPage() {
     if (tab === "saved") removeSaved(id);
     else if (tab === "played") removePlayed(id);
     else removeMyApp(id);
+    refresh();
+  };
+
+  // 현재 탭 전체 비우기
+  const handleClearAll = () => {
+    if (tab === "saved") clearSaved();
+    else if (tab === "played") clearPlayed();
+    else clearMyApps();
+    setClearing(false);
+    refresh();
+  };
+
+  // 아래 추천 목록: 아직 담지 않은 작품들 (최대 6개)
+  const suggestions = allApps.filter((a) => !savedIds.includes(a.id)).slice(0, 6);
+
+  const handleAdd = (id: string) => {
+    addSaved(id);
     refresh();
   };
 
@@ -88,13 +119,13 @@ export default function NestPage() {
       </header>
 
       <div style={{ display: "flex", gap: 8, padding: 16 }}>
-        <button style={tabStyle(tab === "saved")} onClick={() => setTab("saved")}>
+        <button style={tabStyle(tab === "saved")} onClick={() => switchTab("saved")}>
           💛 {labels.saved} {savedIds.length > 0 ? savedIds.length : ""}
         </button>
-        <button style={tabStyle(tab === "played")} onClick={() => setTab("played")}>
+        <button style={tabStyle(tab === "played")} onClick={() => switchTab("played")}>
           ▶️ {labels.played} {playedIds.length > 0 ? playedIds.length : ""}
         </button>
-        <button style={tabStyle(tab === "mine")} onClick={() => setTab("mine")}>
+        <button style={tabStyle(tab === "mine")} onClick={() => switchTab("mine")}>
           ✨ {labels.myUploads} {myApps.length > 0 ? myApps.length : ""}
         </button>
       </div>
@@ -103,13 +134,72 @@ export default function NestPage() {
         <RunButton wide label={`＋ ${labels.uploadButton}`} onClick={() => router.push("/upload")} />
       </div>
 
-      {list.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 20px" }}>
-          <Pigeon size={80} mood="empty" />
-          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 16px" }}>{emptyText}</p>
-          {tab !== "mine" && (
-            <RunButton label="작품 보러 가기" onClick={() => router.push("/")} />
+      {/* 목록이 있을 때만 "전체 비우기"가 보입니다 */}
+      {list.length > 0 && (
+        <div style={{ padding: "0 16px 10px", display: "flex", justifyContent: "flex-end" }}>
+          {clearing ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: font.body, color: colors.text, fontWeight: 600 }}>
+                모두 지울까요?
+              </span>
+              <button
+                onClick={() => setClearing(false)}
+                style={{
+                  height: 40,
+                  padding: "0 16px",
+                  borderRadius: 20,
+                  border: `1px solid ${colors.line}`,
+                  background: colors.surface,
+                  color: colors.textSub,
+                  fontSize: font.sub,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {labels.cancel}
+              </button>
+              <button
+                onClick={handleClearAll}
+                style={{
+                  height: 40,
+                  padding: "0 16px",
+                  borderRadius: 20,
+                  border: "none",
+                  background: "#E24B4A",
+                  color: "#FFFFFF",
+                  fontSize: font.sub,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                모두 지우기
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setClearing(true)}
+              style={{
+                height: 40,
+                padding: "0 16px",
+                borderRadius: 20,
+                border: `1px solid ${colors.line}`,
+                background: colors.surface,
+                color: colors.textSub,
+                fontSize: font.sub,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              🗑️ 전체 비우기
+            </button>
           )}
+        </div>
+      )}
+
+      {list.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "24px 20px" }}>
+          <Pigeon size={80} mood="empty" />
+          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 0" }}>{emptyText}</p>
         </div>
       ) : (
         <div className="gugu-list" style={{ padding: "0 16px" }}>
@@ -117,6 +207,20 @@ export default function NestPage() {
             <NestCard key={app.id} app={app} onRemove={handleRemove} />
           ))}
         </div>
+      )}
+
+      {/* 아래 추천 목록 — 아직 안 담은 작품을 바로 담을 수 있어요 */}
+      {suggestions.length > 0 && (
+        <section style={{ padding: "24px 16px 8px" }}>
+          <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
+            이런 것도 담아 보세요
+          </h2>
+          <div className="gugu-list">
+            {suggestions.map((app) => (
+              <SuggestCard key={app.id} app={app} onAdd={handleAdd} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );
