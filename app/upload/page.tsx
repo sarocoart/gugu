@@ -9,7 +9,7 @@ import { categories, labels, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import { addMyApp } from "@/lib/storage";
 
-// 입력 한 줄을 그리는 작은 도우미 — 폼이 반복되니 묶었어요.
+// 입력 한 줄을 그리는 작은 도우미
 function Field({
   label,
   value,
@@ -48,35 +48,72 @@ function Field({
   );
 }
 
+// 고른 그림 파일을 카드에 알맞은 크기로 줄여서 돌려줍니다.
+// (큰 사진을 그대로 저장하면 브라우저 저장 공간이 금방 차서, 자동으로 줄여요)
+function readAndResize(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 640; // 카드용으로 충분한 크기
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("canvas"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => reject(new Error("image"));
+      img.src = String(reader.result);
+    };
+    reader.onerror = () => reject(new Error("read"));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function UploadPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [category, setCategory] = useState<CategoryId>("game");
-  const [emoji, setEmoji] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(""); // 줄여진 그림 (없으면 빈 문자열)
   const [url, setUrl] = useState("");
   const [maker, setMaker] = useState("");
   const [error, setError] = useState("");
 
+  // 그림 파일을 골랐을 때
+  const pickImage = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const resized = await readAndResize(file);
+      setImage(resized);
+      setError("");
+    } catch {
+      setError("그림을 불러오지 못했어요. 다른 그림으로 해보세요.");
+    }
+  };
+
   const submit = () => {
-    // 아주 단순한 검증 — 빈 값이나 잘못된 주소를 막습니다.
     if (title.trim() === "") return setError("작품 이름을 적어 주세요.");
     if (maker.trim() === "") return setError("만든 사람 이름을 적어 주세요.");
     if (url.trim() !== "" && !/^https?:\/\//.test(url.trim())) {
       return setError("주소는 https:// 로 시작해야 해요.");
     }
-    if (image.trim() !== "" && !/^https?:\/\//.test(image.trim())) {
-      return setError("그림 주소도 https:// 로 시작해야 해요.");
-    }
+
+    // 아이콘은 고른 종류에 맞춰 자동으로 정해집니다.
+    const catIcon = categories.find((c) => c.id === category)?.icon ?? "✨";
 
     const newApp: GuguApp = {
-      id: `my-${Date.now()}`, // 겹치지 않는 id 자동 생성
+      id: `my-${Date.now()}`,
       title: title.trim(),
       desc: desc.trim() || "재밌는 작품이에요!",
       category,
-      emoji: emoji.trim() || "✨",
-      image: image.trim() || undefined,
+      emoji: catIcon,
+      image: image || undefined,
       url: url.trim(),
       maker: maker.trim(),
       createdAt: Date.now(),
@@ -86,7 +123,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div style={{ padding: "20px 16px" }}>
+    <div style={{ padding: "20px 16px", maxWidth: 560, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <button
           onClick={() => router.back()}
@@ -147,8 +184,69 @@ export default function UploadPage() {
         </div>
       </div>
 
-      <Field label="아이콘 (이모지 하나)" value={emoji} onChange={setEmoji} placeholder="예: 🎨 (비우면 ✨)" />
-      <Field label="카드 그림 주소 (선택)" value={image} onChange={setImage} placeholder="https://그림주소 (비우면 이모지 표시)" />
+      {/* 게임 그림 넣기 — 내 컴퓨터/휴대폰에서 그림 파일을 고릅니다 */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
+          작품 그림 (선택)
+        </label>
+        {image ? (
+          <div>
+            <img
+              src={image}
+              alt="고른 그림 미리보기"
+              style={{
+                width: "100%",
+                maxHeight: 240,
+                objectFit: "cover",
+                borderRadius: 16,
+                border: `1px solid ${colors.line}`,
+                display: "block",
+              }}
+            />
+            <button
+              onClick={() => setImage("")}
+              style={{
+                marginTop: 8,
+                height: 40,
+                padding: "0 16px",
+                borderRadius: 20,
+                border: `1px solid ${colors.line}`,
+                background: colors.surface,
+                color: colors.textSub,
+                fontSize: font.sub,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              그림 빼기
+            </button>
+          </div>
+        ) : (
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              height: 96,
+              borderRadius: 16,
+              border: `2px dashed ${colors.mochaDeep}`,
+              background: colors.surface,
+              color: colors.textSub,
+              fontSize: font.body,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            📷 게임/앱 화면 그림 고르기
+            <input type="file" accept="image/*" onChange={pickImage} style={{ display: "none" }} />
+          </label>
+        )}
+        <p style={{ margin: "6px 2px 0", fontSize: font.sub, color: colors.textSub }}>
+          게임 화면을 캡처한 그림을 넣으면 카드에 크게 보여요. 없으면 종류 아이콘이 대신 나와요.
+        </p>
+      </div>
+
       <Field label="실행 주소 (URL)" value={url} onChange={setUrl} placeholder="https://내작품주소 (비우면 준비 중)" />
       <Field label="만든 사람" value={maker} onChange={setMaker} placeholder="예: 홍길동" required />
 

@@ -36,9 +36,14 @@ export default function NestCard({ app, onRemove }: { app: GuguApp; onRemove: (i
             justifyContent: "center",
             fontSize: 28,
             flexShrink: 0,
+            overflow: "hidden",
           }}
         >
-          {app.emoji}
+          {app.image ? (
+            <img src={app.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            app.emoji
+          )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
