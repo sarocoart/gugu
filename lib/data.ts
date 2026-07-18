@@ -9,6 +9,7 @@ export type GuguApp = {
   image?: string;      // 카드에 보일 그림 주소 (있으면 이모지 대신 표시)
   url: string;         // 실행 URL — 비워두면 "준비 중" 표시
   maker: string;       // 제작자 이름
+  tags?: string[];     // 검색 단어 — 제목에 없는 말로도 찾아지게 (예: ["운동","건강"])
   minutes?: number;    // 소요 시간(분), 선택
   createdAt?: number;  // 올린 시각 — 7일 안이면 NEW 배지가 붙어요
   hidden?: boolean;    // true면 홈에서 숨겨져요 (내가 올린 것에서만 보임)

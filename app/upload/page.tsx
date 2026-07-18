@@ -84,6 +84,7 @@ function UploadContent() {
   const [image, setImage] = useState(""); // 줄여진 그림 (없으면 빈 문자열)
   const [url, setUrl] = useState("");
   const [maker, setMaker] = useState("");
+  const [tagsText, setTagsText] = useState(""); // 검색 단어 (쉼표로 구분)
   const [error, setError] = useState("");
 
   // 수정 모드면 기존 내용을 칸에 채워 넣습니다.
@@ -97,6 +98,7 @@ function UploadContent() {
       setImage(found.image ?? "");
       setUrl(found.url);
       setMaker(found.maker);
+      setTagsText((found.tags ?? []).join(", "));
     }
   }, [editId]);
 
@@ -123,6 +125,12 @@ function UploadContent() {
     // 아이콘은 고른 종류에 맞춰 자동으로 정해집니다.
     const catIcon = categories.find((c) => c.id === category)?.icon ?? "✨";
 
+    // 검색 단어: "운동, 건강" → ["운동","건강"]
+    const tags = tagsText
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+
     if (editId) {
       // 수정 모드 — 기존 작품을 찾아 내용만 바꿉니다 (올린 시각·숨김 상태는 유지).
       const existing = getMyApps().find((a) => a.id === editId);
@@ -136,6 +144,7 @@ function UploadContent() {
           image: image || undefined,
           url: url.trim(),
           maker: maker.trim(),
+          tags: tags.length > 0 ? tags : undefined,
         });
         router.push("/nest");
         return;
@@ -151,6 +160,7 @@ function UploadContent() {
       image: image || undefined,
       url: url.trim(),
       maker: maker.trim(),
+      tags: tags.length > 0 ? tags : undefined,
       createdAt: Date.now(),
     };
     addMyApp(newApp);
@@ -284,6 +294,12 @@ function UploadContent() {
 
       <Field label="실행 주소 (URL)" value={url} onChange={setUrl} placeholder="https://내작품주소 (비우면 준비 중)" />
       <Field label="만든 사람" value={maker} onChange={setMaker} placeholder="예: 홍길동" required />
+      <Field
+        label="검색 단어 (선택)"
+        value={tagsText}
+        onChange={setTagsText}
+        placeholder="쉼표로 구분해요. 예: 운동, 건강, 스트레칭"
+      />
 
       {error && (
         <p style={{ color: colors.orange, fontSize: font.sub, margin: "0 0 12px", fontWeight: 600 }}>{error}</p>

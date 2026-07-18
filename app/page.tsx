@@ -6,7 +6,7 @@ import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
 import Pigeon from "@/components/Pigeon";
 import type { GuguApp } from "@/lib/data";
-import { getAllApps } from "@/lib/catalog";
+import { getAllApps, matchesQuery } from "@/lib/catalog";
 import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
@@ -33,9 +33,7 @@ function HomeContent() {
 
   const list = apps.filter((a) => {
     const catOk = cat === "all" || a.category === cat;
-    const q = query.trim();
-    const queryOk = q === "" || a.title.includes(q) || a.desc.includes(q);
-    return catOk && queryOk;
+    return catOk && matchesQuery(a, query);
   });
 
   return (
@@ -72,9 +70,24 @@ function HomeContent() {
       </div>
 
       {list.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px 0" }}>
-          <Pigeon size={80} mood="empty" />
-          <p style={{ fontSize: font.body, color: colors.textSub }}>찾는 작품이 없구구.</p>
+        <div>
+          <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+            <Pigeon size={80} mood="empty" />
+            <p style={{ fontSize: font.body, color: colors.textSub }}>찾는 작품이 없구구.</p>
+          </div>
+          {/* 빈손으로 보내지 않기 — 대신 추천 작품을 보여줍니다 */}
+          {apps.length > 0 && (
+            <div>
+              <h2 style={{ margin: "8px 4px 12px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
+                대신 이런 건 어때요?
+              </h2>
+              <div className="gugu-grid">
+                {apps.slice(0, 6).map((app) => (
+                  <AppCard key={app.id} app={app} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="gugu-grid">

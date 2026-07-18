@@ -14,3 +14,17 @@ export function getAllApps(): GuguApp[] {
 export function findApp(id: string): GuguApp | undefined {
   return [...getMyApps(), ...builtinApps].find((a) => a.id === id);
 }
+
+// 검색 — 제목·소개·만든 사람·종류 이름·검색 단어를 모두 뒤집니다.
+// 여러 단어를 띄어 쓰면(예: "아기 게임") 단어마다 어디든 들어있으면 찾아져요.
+import { categories } from "./labels";
+
+export function matchesQuery(app: GuguApp, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (q === "") return true;
+  const catName = categories.find((c) => c.id === app.category)?.name ?? "";
+  const haystack = [app.title, app.desc, app.maker, catName, ...(app.tags ?? [])]
+    .join(" ")
+    .toLowerCase();
+  return q.split(/\s+/).every((word) => haystack.includes(word));
+}
