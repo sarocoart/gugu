@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, type ChangeEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { addMyApp } from "@/lib/storage";
+import { addMyApp, getMyApps, updateMyApp } from "@/lib/storage";
 
 // 입력 한 줄을 그리는 작은 도우미
 function Field({
@@ -74,8 +74,10 @@ function readAndResize(file: File): Promise<string> {
   });
 }
 
-export default function UploadPage() {
+function UploadContent() {
   const router = useRouter();
+  const params = useSearchParams();
+  const editId = params.get("edit"); // 수정 모드면 작품 id가 들어와요
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [category, setCategory] = useState<CategoryId>("game");
@@ -83,6 +85,20 @@ export default function UploadPage() {
   const [url, setUrl] = useState("");
   const [maker, setMaker] = useState("");
   const [error, setError] = useState("");
+
+  // 수정 모드면 기존 내용을 칸에 채워 넣습니다.
+  useEffect(() => {
+    if (!editId) return;
+    const found = getMyApps().find((a) => a.id === editId);
+    if (found) {
+      setTitle(found.title);
+      setDesc(found.desc);
+      setCategory(found.category);
+      setImage(found.image ?? "");
+      setUrl(found.url);
+      setMaker(found.maker);
+    }
+  }, [editId]);
 
   // 그림 파일을 골랐을 때
   const pickImage = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +122,25 @@ export default function UploadPage() {
 
     // 아이콘은 고른 종류에 맞춰 자동으로 정해집니다.
     const catIcon = categories.find((c) => c.id === category)?.icon ?? "✨";
+
+    if (editId) {
+      // 수정 모드 — 기존 작품을 찾아 내용만 바꿉니다 (올린 시각·숨김 상태는 유지).
+      const existing = getMyApps().find((a) => a.id === editId);
+      if (existing) {
+        updateMyApp({
+          ...existing,
+          title: title.trim(),
+          desc: desc.trim() || "재밌는 작품이에요!",
+          category,
+          emoji: catIcon,
+          image: image || undefined,
+          url: url.trim(),
+          maker: maker.trim(),
+        });
+        router.push("/nest");
+        return;
+      }
+    }
 
     const newApp: GuguApp = {
       id: `my-${Date.now()}`,
@@ -142,7 +177,7 @@ export default function UploadPage() {
           ←
         </button>
         <h1 style={{ margin: 0, fontSize: font.title, fontWeight: 700, color: colors.text }}>
-          {labels.uploadTitle}
+          {editId ? "작품 수정하기" : labels.uploadTitle}
         </h1>
       </div>
 
@@ -254,11 +289,19 @@ export default function UploadPage() {
         <p style={{ color: colors.orange, fontSize: font.sub, margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
       )}
 
-      <RunButton wide label="올리기" onClick={submit} />
+      <RunButton wide label={editId ? "저장하기" : "올리기"} onClick={submit} />
 
       <p style={{ fontSize: font.sub, color: colors.textSub, textAlign: "center", marginTop: 12 }}>
         지금은 이 브라우저에만 저장돼요. 다른 사람과 공유하려면 나중에 서버 연결이 필요해요.
       </p>
     </div>
+  );
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense>
+      <UploadContent />
+    </Suspense>
   );
 }

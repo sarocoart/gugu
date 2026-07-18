@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import NestCard from "@/components/NestCard";
+import MyAppCard from "@/components/MyAppCard";
 import SuggestCard from "@/components/SuggestCard";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
@@ -22,6 +23,7 @@ import {
   clearPlayed,
   clearMyApps,
   getViews,
+  toggleHideMyApp,
 } from "@/lib/storage";
 
 type Tab = "saved" | "played" | "mine";
@@ -246,18 +248,23 @@ export default function NestPage() {
         </div>
       ) : (
         <div className="gugu-list" style={{ padding: "0 16px" }}>
-          {list.map((app) => (
-            <NestCard
-              key={app.id}
-              app={app}
-              onRemove={handleRemove}
-              statsText={
-                tab === "mine"
-                  ? `조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`
-                  : undefined
-              }
-            />
-          ))}
+          {list.map((app) =>
+            tab === "mine" ? (
+              <MyAppCard
+                key={app.id}
+                app={app}
+                statsText={`조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`}
+                onEdit={(id) => router.push(`/upload?edit=${id}`)}
+                onToggleHide={(id) => {
+                  toggleHideMyApp(id);
+                  refresh();
+                }}
+                onRemove={handleRemove}
+              />
+            ) : (
+              <NestCard key={app.id} app={app} onRemove={handleRemove} />
+            )
+          )}
         </div>
       )}
 

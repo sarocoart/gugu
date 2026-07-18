@@ -112,6 +112,28 @@ export function addMyApp(app: GuguApp) {
   }
 }
 
+// 올린 작품 내용 고치기 — 목록 순서는 그대로 유지합니다.
+export function updateMyApp(app: GuguApp) {
+  if (typeof window === "undefined") return;
+  try {
+    const list = getMyApps().map((a) => (a.id === app.id ? app : a));
+    window.localStorage.setItem(MYAPPS_KEY, JSON.stringify(list));
+  } catch {
+    // 무시
+  }
+}
+
+// 숨기기/보이기 뒤집기 — 숨기면 홈에서만 안 보이고, 내가 올린 것엔 남아요.
+export function toggleHideMyApp(id: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const list = getMyApps().map((a) => (a.id === id ? { ...a, hidden: !a.hidden } : a));
+    window.localStorage.setItem(MYAPPS_KEY, JSON.stringify(list));
+  } catch {
+    // 무시
+  }
+}
+
 export function removeMyApp(id: string) {
   if (typeof window === "undefined") return;
   try {
