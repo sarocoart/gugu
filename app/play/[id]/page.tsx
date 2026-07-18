@@ -10,7 +10,7 @@ import { findApp, getAllApps } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
+import { isSaved, toggleSaved, markPlayed, addView } from "@/lib/storage";
 
 export default function PlayPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -27,6 +27,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     // 지금 보는 작품을 뺀 나머지를 아래 추천으로 보여줍니다.
     setOthers(getAllApps().filter((a) => a.id !== params.id).slice(0, 6));
     if (found) {
+      addView(found.id); // 조회수 1 올리기
       setSaved(isSaved(found.id));
       if (found.url) markPlayed(found.id);
     }

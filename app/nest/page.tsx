@@ -21,9 +21,11 @@ import {
   clearSaved,
   clearPlayed,
   clearMyApps,
+  getViews,
 } from "@/lib/storage";
 
 type Tab = "saved" | "played" | "mine";
+type MineSort = "recent" | "views" | "saves"; // 내가 올린 것 정렬: 최신순/조회순/담김순
 
 export default function NestPage() {
   const router = useRouter();
@@ -32,6 +34,8 @@ export default function NestPage() {
   const [playedIds, setPlayedIds] = useState<string[]>([]);
   const [myApps, setMyApps] = useState<GuguApp[]>([]);
   const [allApps, setAllApps] = useState<GuguApp[]>([]);
+  const [views, setViews] = useState<Record<string, number>>({});
+  const [mineSort, setMineSort] = useState<MineSort>("recent");
   const [clearing, setClearing] = useState(false); // "전체 비우기" 확인창 표시 여부
 
   // 저장소에서 현재 상태를 다시 읽어옵니다 (담기/삭제 후에도 호출).
@@ -40,6 +44,7 @@ export default function NestPage() {
     setPlayedIds(getPlayed());
     setMyApps(getMyApps());
     setAllApps(getAllApps());
+    setViews(getViews());
   };
 
   useEffect(() => {
@@ -59,7 +64,13 @@ export default function NestPage() {
   } else if (tab === "played") {
     list = playedIds.map((id) => findApp(id)).filter((a): a is GuguApp => Boolean(a));
   } else {
-    list = myApps;
+    // 내가 올린 것 — 고른 순위 기준으로 정렬합니다.
+    const savedNum = (id: string) => (savedIds.includes(id) ? 1 : 0);
+    const viewNum = (id: string) => views[id] ?? 0;
+    list = [...myApps];
+    if (mineSort === "views") list.sort((a, b) => viewNum(b.id) - viewNum(a.id));
+    else if (mineSort === "saves") list.sort((a, b) => savedNum(b.id) - savedNum(a.id));
+    // recent는 저장된 순서(최신이 앞) 그대로
   }
 
   // 탭마다 지우는 곳이 다릅니다.
@@ -134,6 +145,38 @@ export default function NestPage() {
         <RunButton wide label={`＋ ${labels.uploadButton}`} onClick={() => router.push("/upload")} />
       </div>
 
+      {/* 내가 올린 것 탭에서만 보이는 순위 정렬 */}
+      {tab === "mine" && myApps.length > 0 && (
+        <div style={{ display: "flex", gap: 8, padding: "0 16px 10px", alignItems: "center" }}>
+          <span style={{ fontSize: font.sub, color: colors.textSub, fontWeight: 600 }}>순위 보기:</span>
+          {(
+            [
+              { id: "recent", name: "최신순" },
+              { id: "views", name: "👀 조회순" },
+              { id: "saves", name: "💛 담김순" },
+            ] as { id: MineSort; name: string }[]
+          ).map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setMineSort(s.id)}
+              style={{
+                height: 40,
+                padding: "0 14px",
+                borderRadius: 20,
+                border: mineSort === s.id ? "none" : `1px solid ${colors.line}`,
+                background: mineSort === s.id ? colors.orangeSoft : colors.surface,
+                color: mineSort === s.id ? colors.orangeText : colors.textSub,
+                fontSize: font.sub,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 목록이 있을 때만 "전체 비우기"가 보입니다 */}
       {list.length > 0 && (
         <div style={{ padding: "0 16px 10px", display: "flex", justifyContent: "flex-end" }}>
@@ -204,7 +247,16 @@ export default function NestPage() {
       ) : (
         <div className="gugu-list" style={{ padding: "0 16px" }}>
           {list.map((app) => (
-            <NestCard key={app.id} app={app} onRemove={handleRemove} />
+            <NestCard
+              key={app.id}
+              app={app}
+              onRemove={handleRemove}
+              statsText={
+                tab === "mine"
+                  ? `👀 조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`
+                  : undefined
+              }
+            />
           ))}
         </div>
       )}

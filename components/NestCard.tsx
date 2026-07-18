@@ -6,9 +6,18 @@ import type { GuguApp } from "@/lib/data";
 import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
-// 내 둥지 전용 카드 — "하기" + "지우기"가 있고, 지울 때 확인창이 뜹니다.
+// 내 둥지 전용 카드 — "GO!" + "지우기"가 있고, 지울 때 확인창이 뜹니다.
 // onRemove는 실제 삭제 동작(부모가 넘겨줌). 종류마다 지우는 곳이 달라서요.
-export default function NestCard({ app, onRemove }: { app: GuguApp; onRemove: (id: string) => void }) {
+// statsText를 넘기면 (예: "👀 조회 12 · 💛 담김 1") 종류 아래에 표시됩니다.
+export default function NestCard({
+  app,
+  onRemove,
+  statsText,
+}: {
+  app: GuguApp;
+  onRemove: (id: string) => void;
+  statsText?: string;
+}) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const cat = categories.find((c) => c.id === app.category);
@@ -50,6 +59,11 @@ export default function NestCard({ app, onRemove }: { app: GuguApp; onRemove: (i
             {app.title}
           </p>
           <p style={{ margin: "2px 0 0", fontSize: font.sub, color: colors.textSub }}>{sub}</p>
+          {statsText && (
+            <p style={{ margin: "2px 0 0", fontSize: font.sub, color: colors.orangeText, fontWeight: 600 }}>
+              {statsText}
+            </p>
+          )}
         </div>
         <button
           onClick={() => router.push(`/play/${app.id}`)}

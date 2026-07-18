@@ -121,3 +121,32 @@ export function removeMyApp(id: string) {
     // 무시
   }
 }
+
+// ---- 조회수 ----
+// 작품별로 실행 화면이 열린 횟수를 셉니다.
+// 지금은 이 브라우저에서의 횟수만 세고, 나중에 서버(Supabase)를 붙이면
+// 이 함수들 속만 바꿔서 "모든 사람의 조회수"로 자연스럽게 바뀝니다.
+const VIEWS_KEY = "gugu_views";
+
+export function getViews(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(VIEWS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function addView(id: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const views = getViews();
+    views[id] = (views[id] ?? 0) + 1;
+    window.localStorage.setItem(VIEWS_KEY, JSON.stringify(views));
+  } catch {
+    // 저장 실패해도 앱이 죽지 않게 넘어갑니다.
+  }
+}
