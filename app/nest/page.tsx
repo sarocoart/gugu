@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
-import NestCard from "@/components/NestCard";
+import AppCard from "@/components/AppCard";
 import MyAppCard from "@/components/MyAppCard";
 import SuggestCard from "@/components/SuggestCard";
 import RunButton from "@/components/RunButton";
@@ -247,7 +247,7 @@ export default function NestPage() {
           <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 0" }}>{emptyText}</p>
         </div>
       ) : (
-        <div className="gugu-list" style={{ padding: "0 16px" }}>
+        <div className={tab === "mine" ? "gugu-list" : "gugu-grid"} style={{ padding: "0 16px" }}>
           {list.map((app) =>
             tab === "mine" ? (
               <MyAppCard
@@ -262,7 +262,7 @@ export default function NestPage() {
                 onRemove={handleRemove}
               />
             ) : (
-              <NestCard key={app.id} app={app} onRemove={handleRemove} />
+              <AppCard key={app.id} app={app} onRemove={handleRemove} onSavedChange={refresh} />
             )
           )}
         </div>

@@ -5,26 +5,43 @@ import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved } from "@/lib/storage";
+import { isSaved, toggleSaved, getViews } from "@/lib/storage";
 
-// 큰 그림 카드 — 홈 화면에서 사용합니다.
-// 그림/제목을 누르면 실행 화면으로, 아래에는 "게임 GO!"와 "담기" 버튼이 있어요.
-export default function AppCard({ app }: { app: GuguApp }) {
+// 큰 그림 카드 — 홈과 내 둥지(담은 것/해본 것)에서 함께 씁니다.
+// 제목은 가운데 정렬, 담기는 하트 색과 숫자로 표시합니다.
+// onRemove를 넘기면 오른쪽 위에 빼기(✕) 버튼이 생깁니다 (내 둥지용).
+export default function AppCard({
+  app,
+  onRemove,
+  onSavedChange,
+}: {
+  app: GuguApp;
+  onRemove?: (id: string) => void;
+  onSavedChange?: () => void;
+}) {
   const router = useRouter();
   const [saved, setSaved] = useState(false);
+  const [removing, setRemoving] = useState(false); // ✕ 두 번 확인용
+  const [viewCount, setViewCount] = useState(0);
   const cat = categories.find((c) => c.id === app.category);
 
-  // "게임 GO!", "테스트 GO!" 처럼 종류에 맞는 버튼 글자 (규칙은 labels.ts에)
-  const goLabel = runLabel(app.category);
+  // 담긴 숫자 — 지금은 이 브라우저 기준(0 또는 1), 서버 연결 후 전체 숫자로 바뀝니다.
+  const savedCount = saved ? 1 : 0;
 
-  // 올린 지 7일 안이면 NEW 배지
   const isNew = app.createdAt !== undefined && Date.now() - app.createdAt < 7 * 24 * 60 * 60 * 1000;
 
   useEffect(() => {
     setSaved(isSaved(app.id));
+    setViewCount(getViews()[app.id] ?? 0);
   }, [app.id]);
 
   const goPlay = () => router.push(`/play/${app.id}`);
+
+  const onHeart = () => {
+    const next = toggleSaved(app.id);
+    setSaved(next);
+    if (onSavedChange) onSavedChange();
+  };
 
   return (
     <div
@@ -55,14 +72,75 @@ export default function AppCard({ app }: { app: GuguApp }) {
         </span>
       )}
 
-      {/* 그림과 제목 — 누르면 실행 화면으로 */}
+      {/* 내 둥지에서만 보이는 빼기(✕) — 한 번 누르면 확인, 한 번 더 누르면 빼기 */}
+      {onRemove &&
+        (removing ? (
+          <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 6, zIndex: 2 }}>
+            <button
+              onClick={() => setRemoving(false)}
+              style={{
+                height: 36,
+                padding: "0 12px",
+                borderRadius: 18,
+                border: `1px solid ${colors.line}`,
+                background: colors.surface,
+                color: colors.textSub,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {labels.cancel}
+            </button>
+            <button
+              onClick={() => onRemove(app.id)}
+              style={{
+                height: 36,
+                padding: "0 12px",
+                borderRadius: 18,
+                border: "none",
+                background: "#E24B4A",
+                color: "#FFFFFF",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              빼기
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setRemoving(true)}
+            aria-label="목록에서 빼기"
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              border: `1px solid ${colors.line}`,
+              background: colors.surface,
+              color: colors.textSub,
+              fontSize: 16,
+              fontWeight: 700,
+              cursor: "pointer",
+              zIndex: 2,
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        ))}
+
+      {/* 그림 — 누르면 실행 화면으로 */}
       <button
         onClick={goPlay}
         aria-label={`${app.title} 실행 화면 열기`}
         style={{
           display: "block",
           width: "100%",
-          textAlign: "left",
           background: "none",
           border: "none",
           padding: 0,
@@ -73,7 +151,7 @@ export default function AppCard({ app }: { app: GuguApp }) {
           aria-hidden="true"
           style={{
             width: "100%",
-            aspectRatio: "1 / 0.85",
+            aspectRatio: "1 / 0.8",
             background: colors.mint,
             display: "flex",
             alignItems: "center",
@@ -84,19 +162,22 @@ export default function AppCard({ app }: { app: GuguApp }) {
           {app.image ? (
             <img src={app.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ fontSize: 64 }}>{app.emoji}</span>
+            <span style={{ fontSize: 60 }}>{app.emoji}</span>
           )}
         </div>
-        <div style={{ padding: "12px 14px 0" }}>
+
+        {/* 글자 영역 — 가운데 정렬로 깔끔하게 */}
+        <div style={{ padding: "12px 14px 0", textAlign: "center" }}>
           <p style={{ margin: 0, fontSize: font.sub, color: colors.mintText, fontWeight: 600 }}>
             {cat ? `${cat.icon} ${cat.name}` : ""}
             {app.minutes ? ` · ${app.minutes}분` : ""}
+            <span style={{ color: colors.textSub, fontWeight: 400 }}>{` · 조회 ${viewCount}`}</span>
           </p>
           <p
             style={{
-              margin: "4px 0 0",
+              margin: "6px 0 0",
               fontSize: font.cardTitle,
-              fontWeight: 600,
+              fontWeight: 700,
               color: colors.text,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -108,8 +189,8 @@ export default function AppCard({ app }: { app: GuguApp }) {
         </div>
       </button>
 
-      {/* GO! 버튼과 담기 버튼 */}
-      <div style={{ display: "flex", gap: 8, padding: "10px 14px 14px" }}>
+      {/* GO! + 하트(담긴 숫자) */}
+      <div style={{ display: "flex", gap: 8, padding: "12px 14px 14px" }}>
         <button
           onClick={goPlay}
           style={{
@@ -122,15 +203,16 @@ export default function AppCard({ app }: { app: GuguApp }) {
             fontSize: font.button,
             fontWeight: 700,
             cursor: "pointer",
-            whiteSpace: "nowrap",
+            letterSpacing: "0.02em",
           }}
         >
-          {goLabel}
+          {runLabel(app.category)}
         </button>
         <button
-          onClick={() => setSaved(toggleSaved(app.id))}
+          onClick={onHeart}
           aria-label={saved ? labels.unsave : labels.save}
           style={{
+            minWidth: 72,
             height: 48,
             padding: "0 14px",
             borderRadius: 24,
@@ -138,13 +220,17 @@ export default function AppCard({ app }: { app: GuguApp }) {
             background: saved ? colors.orangeSoft : colors.surface,
             color: saved ? colors.orangeText : colors.textSub,
             fontSize: font.body,
-            fontWeight: 600,
+            fontWeight: 700,
             cursor: "pointer",
-            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
             flexShrink: 0,
           }}
         >
-          {saved ? `💛 ${labels.savedDone}` : `🤍 ${labels.save}`}
+          <span aria-hidden="true">{saved ? "💛" : "🤍"}</span>
+          {savedCount}
         </button>
       </div>
     </div>

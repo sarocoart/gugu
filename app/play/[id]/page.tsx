@@ -127,7 +127,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               cursor: "pointer",
             }}
           >
-            {saved ? `💛 ${labels.savedDone}` : `🤍 ${labels.save}`}
+            {saved ? "💛 1" : "🤍 0"}
           </button>
         )}
         <button
