@@ -11,6 +11,7 @@ export const labels = {
   run: "하기",
   runNewTab: "새 창에서 하기",
   save: "담기",
+  savedDone: "담았어요",
   unsave: "담기 취소",
   emptyNest: "아직 담은 게 없구구! 구경하러 가볼까요?",
   emptyPlayed: "아직 해본 게 없구구! 하나 해볼까요?",

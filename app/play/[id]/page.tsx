@@ -122,7 +122,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               cursor: "pointer",
             }}
           >
-            {saved ? "💛 담음" : `🤍 ${labels.save}`}
+            {saved ? `💛 ${labels.savedDone}` : `🤍 ${labels.save}`}
           </button>
         )}
         <button

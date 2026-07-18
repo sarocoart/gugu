@@ -73,7 +73,19 @@ export default function SuggestCard({ app, onAdd }: { app: GuguApp; onAdd: (id: 
           >
             {app.title}
           </p>
-          <p style={{ margin: "2px 0 0", fontSize: font.sub, color: colors.textSub }}>
+          <p
+            style={{
+              margin: "2px 0 0",
+              fontSize: font.sub,
+              color: colors.textSub,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {app.desc}
+          </p>
+          <p style={{ margin: "2px 0 0", fontSize: font.sub, color: colors.mintText, fontWeight: 600 }}>
             {cat ? `${cat.icon} ${cat.name}` : ""}
           </p>
         </div>

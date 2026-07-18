@@ -1,33 +1,38 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
+import { isSaved, toggleSaved } from "@/lib/storage";
 
-// 큰 그림 카드 — 홈·구경 화면에서 사용합니다.
-// 카드 전체가 버튼이라 어디를 눌러도 실행 화면으로 이동해요 (아이·어르신 배려).
-// 썸네일: image 주소가 있으면 그림을, 없으면 이모지를 크게 보여줍니다.
+// 큰 그림 카드 — 홈 화면에서 사용합니다.
+// 그림/제목을 누르면 실행 화면으로, 아래에는 "게임 GO!"와 "담기" 버튼이 있어요.
 export default function AppCard({ app }: { app: GuguApp }) {
   const router = useRouter();
+  const [saved, setSaved] = useState(false);
   const cat = categories.find((c) => c.id === app.category);
-  // 올린 지 7일 안이면 NEW 배지를 붙입니다.
+
+  // "게임 GO!", "테스트 GO!" 처럼 종류에 맞는 버튼 글자
+  const goLabel = cat ? `${cat.name} GO!` : "GO!";
+
+  // 올린 지 7일 안이면 NEW 배지
   const isNew = app.createdAt !== undefined && Date.now() - app.createdAt < 7 * 24 * 60 * 60 * 1000;
 
+  useEffect(() => {
+    setSaved(isSaved(app.id));
+  }, [app.id]);
+
+  const goPlay = () => router.push(`/play/${app.id}`);
+
   return (
-    <button
-      onClick={() => router.push(`/play/${app.id}`)}
-      aria-label={`${app.title} ${labels.run}`}
+    <div
       style={{
-        display: "block",
-        width: "100%",
-        textAlign: "left",
         background: colors.surface,
         borderRadius: 20,
         border: `1px solid ${colors.line}`,
-        padding: 0,
         overflow: "hidden",
-        cursor: "pointer",
         position: "relative",
       }}
     >
@@ -49,61 +54,99 @@ export default function AppCard({ app }: { app: GuguApp }) {
           NEW
         </span>
       )}
-      <div
-        aria-hidden="true"
+
+      {/* 그림과 제목 — 누르면 실행 화면으로 */}
+      <button
+        onClick={goPlay}
+        aria-label={`${app.title} 실행 화면 열기`}
         style={{
+          display: "block",
           width: "100%",
-          aspectRatio: "1 / 0.85",
-          background: colors.mint,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
         }}
       >
-        {app.image ? (
-          <img
-            src={app.image}
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        ) : (
-          <span style={{ fontSize: 64 }}>{app.emoji}</span>
-        )}
-      </div>
-
-      <div style={{ padding: "12px 14px 14px" }}>
-        <p style={{ margin: 0, fontSize: font.sub, color: colors.mintText, fontWeight: 600 }}>
-          {cat ? `${cat.icon} ${cat.name}` : ""}
-          {app.minutes ? ` · ${app.minutes}분` : ""}
-        </p>
-        <p
+        <div
+          aria-hidden="true"
           style={{
-            margin: "4px 0 10px",
-            fontSize: font.cardTitle,
-            fontWeight: 600,
-            color: colors.text,
+            width: "100%",
+            aspectRatio: "1 / 0.85",
+            background: colors.mint,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             overflow: "hidden",
-            textOverflow: "ellipsis",
+          }}
+        >
+          {app.image ? (
+            <img src={app.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ fontSize: 64 }}>{app.emoji}</span>
+          )}
+        </div>
+        <div style={{ padding: "12px 14px 0" }}>
+          <p style={{ margin: 0, fontSize: font.sub, color: colors.mintText, fontWeight: 600 }}>
+            {cat ? `${cat.icon} ${cat.name}` : ""}
+            {app.minutes ? ` · ${app.minutes}분` : ""}
+          </p>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: font.cardTitle,
+              fontWeight: 600,
+              color: colors.text,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {app.title}
+          </p>
+        </div>
+      </button>
+
+      {/* GO! 버튼과 담기 버튼 */}
+      <div style={{ display: "flex", gap: 8, padding: "10px 14px 14px" }}>
+        <button
+          onClick={goPlay}
+          style={{
+            flex: 1,
+            height: 48,
+            borderRadius: 24,
+            border: "none",
+            background: colors.orange,
+            color: "#FFFFFF",
+            fontSize: font.button,
+            fontWeight: 700,
+            cursor: "pointer",
             whiteSpace: "nowrap",
           }}
         >
-          {app.title}
-        </p>
-        <span
+          {goLabel}
+        </button>
+        <button
+          onClick={() => setSaved(toggleSaved(app.id))}
+          aria-label={saved ? labels.unsave : labels.save}
           style={{
-            display: "inline-block",
-            padding: "10px 22px",
-            borderRadius: 22,
-            background: colors.orange,
-            color: "#FFFFFF",
+            height: 48,
+            padding: "0 14px",
+            borderRadius: 24,
+            border: saved ? "none" : `1px solid ${colors.line}`,
+            background: saved ? colors.orangeSoft : colors.surface,
+            color: saved ? colors.orangeText : colors.textSub,
             fontSize: font.body,
             fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          {labels.run}
-        </span>
+          {saved ? `💛 ${labels.savedDone}` : `🤍 ${labels.save}`}
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
