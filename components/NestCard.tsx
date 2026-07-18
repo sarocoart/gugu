@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
-import { categories, labels } from "@/lib/labels";
+import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 
 // 내 둥지 전용 카드 — "하기" + "지우기"가 있고, 지울 때 확인창이 뜹니다.
@@ -63,9 +63,11 @@ export default function NestCard({ app, onRemove }: { app: GuguApp; onRemove: (i
             fontSize: font.button,
             fontWeight: 600,
             cursor: "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          {labels.run}
+          {runLabel(app.category)}
         </button>
         <button
           onClick={() => setConfirming(true)}

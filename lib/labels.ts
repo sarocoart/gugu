@@ -8,7 +8,7 @@ export const labels = {
   saved: "담은 것",
   played: "해본 것",
   follow: "단골",
-  run: "하기",
+  run: "GO!",
   runNewTab: "새 창에서 하기",
   save: "담기",
   savedDone: "담았어요",
@@ -41,3 +41,13 @@ export const categories = [
 ] as const;
 
 export type CategoryId = (typeof categories)[number]["id"];
+
+// 실행 버튼 글자 — 모든 카드가 이 함수를 씁니다.
+// 지금은 어디서나 "GO!" 하나로 통일. (labels.run만 바꾸면 전체가 바뀝니다)
+// 예전처럼 "게임 GO!"로 되돌리고 싶으면 아래 주석 줄을 대신 쓰면 돼요.
+export function runLabel(categoryId: string): string {
+  void categoryId; // 지금은 종류를 쓰지 않지만, 규칙을 되돌릴 때를 위해 남겨둡니다.
+  return labels.run;
+  // const cat = categories.find((c) => c.id === categoryId);
+  // return cat ? `${cat.name} ${labels.run}` : labels.run;
+}

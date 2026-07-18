@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
-import { categories, labels } from "@/lib/labels";
+import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import { isSaved, toggleSaved } from "@/lib/storage";
 
@@ -14,8 +14,8 @@ export default function AppCard({ app }: { app: GuguApp }) {
   const [saved, setSaved] = useState(false);
   const cat = categories.find((c) => c.id === app.category);
 
-  // "게임 GO!", "테스트 GO!" 처럼 종류에 맞는 버튼 글자
-  const goLabel = cat ? `${cat.name} GO!` : "GO!";
+  // "게임 GO!", "테스트 GO!" 처럼 종류에 맞는 버튼 글자 (규칙은 labels.ts에)
+  const goLabel = runLabel(app.category);
 
   // 올린 지 7일 안이면 NEW 배지
   const isNew = app.createdAt !== undefined && Date.now() - app.createdAt < 7 * 24 * 60 * 60 * 1000;
