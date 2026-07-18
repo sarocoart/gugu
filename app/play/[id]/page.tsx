@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
+import AppCard from "@/components/AppCard";
 import type { GuguApp } from "@/lib/data";
-import { findApp } from "@/lib/catalog";
+import { findApp, getAllApps } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
@@ -17,11 +18,14 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [others, setOthers] = useState<GuguApp[]>([]); // 아래에 보여줄 다른 작품들
 
   useEffect(() => {
     const found = findApp(params.id);
     setApp(found);
     setReady(true);
+    // 지금 보는 작품을 뺀 나머지를 아래 추천으로 보여줍니다.
+    setOthers(getAllApps().filter((a) => a.id !== params.id).slice(0, 6));
     if (found) {
       setSaved(isSaved(found.id));
       if (found.url) markPlayed(found.id);
@@ -173,22 +177,19 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      {/* 공유 링크로 온 사람을 구구마켓 구경으로 데려오는 배너 */}
-      <div
-        style={{
-          margin: "8px 16px 24px",
-          padding: "20px 16px",
-          borderRadius: 20,
-          background: colors.mint,
-          textAlign: "center",
-        }}
-      >
-        <Pigeon size={56} mood="hello" />
-        <p style={{ margin: "8px 0 12px", fontSize: font.body, fontWeight: 600, color: colors.mintText }}>
-          재밌는 작품이 더 많아요!
-        </p>
-        <RunButton label="구구마켓 구경 가기" onClick={() => router.push("/")} />
-      </div>
+      {/* 다른 작품들이 바로 보여요 — 공유로 온 사람도 여기서 계속 구경 */}
+      {others.length > 0 && (
+        <section style={{ padding: "16px 16px 24px" }}>
+          <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
+            재밌는 작품이 더 많아요!
+          </h2>
+          <div className="gugu-grid">
+            {others.map((a) => (
+              <AppCard key={a.id} app={a} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
