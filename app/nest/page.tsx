@@ -152,7 +152,7 @@ export default function NestPage() {
           {(
             [
               { id: "recent", name: "최신순" },
-              { id: "views", name: "👀 조회순" },
+              { id: "views", name: "조회순" },
               { id: "saves", name: "💛 담김순" },
             ] as { id: MineSort; name: string }[]
           ).map((s) => (
@@ -253,7 +253,7 @@ export default function NestPage() {
               onRemove={handleRemove}
               statsText={
                 tab === "mine"
-                  ? `👀 조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`
+                  ? `조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`
                   : undefined
               }
             />
