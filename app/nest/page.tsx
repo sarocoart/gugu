@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import AppCard from "@/components/AppCard";
 import MyAppCard from "@/components/MyAppCard";
-import SuggestCard from "@/components/SuggestCard";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
 import { findApp, getAllApps } from "@/lib/catalog";
@@ -18,7 +17,6 @@ import {
   removeSaved,
   removePlayed,
   removeMyApp,
-  addSaved,
   clearSaved,
   clearPlayed,
   clearMyApps,
@@ -110,11 +108,6 @@ export default function NestPage() {
 
   // 아래 추천 목록: 아직 담지 않은 작품들 (최대 6개)
   const suggestions = allApps.filter((a) => !savedIds.includes(a.id)).slice(0, 6);
-
-  const handleAdd = (id: string) => {
-    addSaved(id);
-    refresh();
-  };
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -318,9 +311,9 @@ export default function NestPage() {
           <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
             이런 것도 담아 보세요
           </h2>
-          <div className="gugu-list">
+          <div className="gugu-grid">
             {suggestions.map((app) => (
-              <SuggestCard key={app.id} app={app} onAdd={handleAdd} />
+              <AppCard key={app.id} app={app} onSavedChange={refresh} />
             ))}
           </div>
         </section>
