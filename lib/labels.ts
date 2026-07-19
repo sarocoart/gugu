@@ -4,7 +4,7 @@ export const labels = {
   tagline: "오늘 뭐 해보지?",
   home: "홈",
   explore: "구경",
-  mypage: "내 둥지",
+  mypage: "마이 페이지",
   saved: "담은 것",
   played: "해본 것",
   follow: "단골",

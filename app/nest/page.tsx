@@ -170,24 +170,7 @@ export default function NestPage() {
                   로그아웃
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={() => router.push("/login")}
-                style={{
-                  height: 44,
-                  padding: "0 20px",
-                  borderRadius: 22,
-                  border: "none",
-                  background: colors.orangeSoft,
-                  color: colors.orangeText,
-                  fontSize: font.body,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                로그인 · 빌트마켓 계정 사용 가능
-              </button>
-            )}
+            ) : null}
           </div>
         )}
       </header>

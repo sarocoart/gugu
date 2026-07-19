@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
         <p style={{ fontSize: font.body, color: colors.text, margin: "14px 0 18px", fontWeight: 600 }}>
           새 비밀번호로 바뀌었구구! 이제 이 비밀번호로 로그인하면 돼요.
         </p>
-        <RunButton label="내 둥지로 가기" onClick={() => router.push("/nest")} />
+        <RunButton label="마이 페이지로 가기" onClick={() => router.push("/nest")} />
       </div>
     );
   }

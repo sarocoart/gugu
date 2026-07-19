@@ -32,14 +32,19 @@ a {
 .gugu-shell {
   margin: 0 auto;
   min-height: 100vh;
+  padding-bottom: 28px;
 }
 
+/* 상단 가로 메뉴바 — 모바일·PC 모두 표시
+   모바일: 로그인 | 홈 | 마이 페이지 가 양끝·가운데로 펼쳐짐 */
 .gugu-topnav {
-  display: none;
+  display: flex;
+  justify-content: space-between;
 }
 
-.gugu-bottomnav {
-  display: flex;
+/* 로고는 PC에서만 (모바일은 공간이 좁아서 숨김) */
+.gugu-logo {
+  display: none;
 }
 
 .gugu-list {
@@ -65,16 +70,21 @@ a {
 @media (min-width: 760px) {
   .gugu-shell {
     max-width: 1120px;
-    padding: 0 24px;
-    padding-bottom: 0;
+    padding: 0 24px 32px;
   }
 
+  /* PC: 로그인 왼쪽, 로고 중앙, 홈·마이 페이지 오른쪽 */
   .gugu-topnav {
-    display: flex;
+    justify-content: flex-start;
+    gap: 24px;
   }
 
-  .gugu-bottomnav {
-    display: none;
+  .gugu-logo {
+    display: inline-flex;
+  }
+
+  .gugu-nav-home {
+    margin-left: auto; /* 홈부터 오른쪽으로 밀기 */
   }
 
   .gugu-list {

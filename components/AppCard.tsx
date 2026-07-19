@@ -212,9 +212,9 @@ export default function AppCard({
           onClick={onHeart}
           aria-label={saved ? labels.unsave : labels.save}
           style={{
-            minWidth: 72,
+            minWidth: 56,
             height: 48,
-            padding: "0 14px",
+            padding: "0 12px",
             borderRadius: 24,
             border: saved ? "none" : `1px solid ${colors.line}`,
             background: saved ? colors.orangeSoft : colors.surface,

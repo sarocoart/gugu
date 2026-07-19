@@ -41,8 +41,7 @@ export default function TopNav() {
       className="gugu-topnav"
       style={{
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: "14px 24px",
+        padding: "14px 20px",
         background: colors.surface,
         borderBottom: `1px solid ${colors.line}`,
         position: "sticky",
@@ -55,14 +54,12 @@ export default function TopNav() {
         <button
           onClick={logout}
           style={{
-            height: 40,
-            padding: "0 16px",
-            borderRadius: 20,
-            border: `1px solid ${colors.line}`,
-            background: colors.surface,
-            color: colors.textSub,
-            fontSize: font.sub,
-            fontWeight: 600,
+            background: "none",
+            border: "none",
+            padding: 0,
+            color: colors.text,
+            fontSize: font.body,
+            fontWeight: 500,
             cursor: "pointer",
           }}
         >
@@ -91,42 +88,41 @@ export default function TopNav() {
       {/* 정중앙 — 구구마켓 로고 (글자와 비둘기를 세로 중앙 정렬) */}
       <Link
         href="/"
+        className="gugu-logo"
         style={{
           position: "absolute",
           left: "50%",
           transform: "translateX(-50%)",
-          display: "inline-flex",
           alignItems: "center",
-          gap: 6,
           fontSize: font.title,
           fontWeight: 700,
           color: colors.text,
           textDecoration: "none",
         }}
       >
-        구구마켓 <span aria-hidden="true" style={{ fontSize: 24, lineHeight: 1 }}>🕊️</span>
+        구구마켓
       </Link>
 
-      {/* 오른쪽 — 홈 · 내 둥지 · 빌트마켓 GO! */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        {navItems.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                fontSize: font.body,
-                fontWeight: active ? 700 : 500,
-                color: colors.text,
-                textDecoration: "none",
-              }}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-        {features.biltButtons && (
+      {/* 홈 · 마이 페이지 — 홈은 PC에서 오른쪽으로 밀리는 클래스(gugu-nav-home) */}
+      {navItems.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={item.href === "/" ? "gugu-nav-home" : undefined}
+            style={{
+              fontSize: font.body,
+              fontWeight: active ? 700 : 500,
+              color: colors.text,
+              textDecoration: "none",
+            }}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+      {features.biltButtons && (
         <a
           href={links.bilt}
           target="_blank"
@@ -145,8 +141,7 @@ export default function TopNav() {
         >
           🛒 빌트마켓 GO!
         </a>
-        )}
-      </div>
+      )}
     </nav>
   );
 }

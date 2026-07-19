@@ -122,22 +122,36 @@ export default function LoginPage() {
         onClick={submit}
       />
 
-      <button
-        onClick={() => router.push("/forgot-password")}
-        style={{
-          display: "block",
-          margin: "14px auto 0",
-          background: "none",
-          border: "none",
-          color: colors.textSub,
-          fontSize: font.sub,
-          fontWeight: 600,
-          textDecoration: "underline",
-          cursor: "pointer",
-        }}
-      >
-        비밀번호를 잊었나요? 재설정 메일 받기
-      </button>
+      <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 14 }}>
+        <button
+          onClick={() => router.push("/forgot-password")}
+          style={{
+            background: "none",
+            border: "none",
+            color: colors.textSub,
+            fontSize: font.sub,
+            fontWeight: 600,
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          비밀번호 찾기
+        </button>
+        <button
+          onClick={() => router.push("/find-email")}
+          style={{
+            background: "none",
+            border: "none",
+            color: colors.textSub,
+            fontSize: font.sub,
+            fontWeight: 600,
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          이메일 찾기
+        </button>
+      </div>
     </div>
   );
 }

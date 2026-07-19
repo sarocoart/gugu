@@ -110,10 +110,27 @@ export default function ForgotPasswordPage() {
         <RunButton wide label={busy ? "잠깐만요..." : "재설정 메일 보내기"} onClick={send} />
 
         <button
-          onClick={() => router.push("/login")}
+          onClick={() => router.push("/find-email")}
           style={{
             display: "block",
             margin: "14px auto 0",
+            background: "none",
+            border: "none",
+            color: colors.textSub,
+            fontSize: font.sub,
+            fontWeight: 600,
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          가입한 이메일이 기억나지 않나요? 이메일 찾기
+        </button>
+
+        <button
+          onClick={() => router.push("/login")}
+          style={{
+            display: "block",
+            margin: "10px auto 0",
             background: "none",
             border: "none",
             color: colors.textSub,

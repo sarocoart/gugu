@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { labels } from "@/lib/labels";
 import { colors } from "@/lib/theme";
+import { features } from "@/lib/features";
 import TopNav from "@/components/TopNav";
-import BottomNav from "@/components/BottomNav";
+import BiltBar from "@/components/BiltBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,10 +16,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body style={{ background: colors.bg }}>
         <TopNav />
-        <main className="gugu-shell" style={{ paddingBottom: 72 }}>
+        {/* 빌트마켓 바가 켜지면 바 높이만큼 하단 여백 추가 (같은 스위치에 연동) */}
+        <main className="gugu-shell" style={features.biltButtons ? { paddingBottom: 100 } : undefined}>
           {children}
         </main>
-        <BottomNav />
+        <BiltBar />
       </body>
     </html>
   );

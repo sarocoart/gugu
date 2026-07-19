@@ -108,7 +108,17 @@ export default function PlayPage({ params }: { params: { id: string } }) {
           ←
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: font.cardTitle, fontWeight: 600, color: colors.text }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: font.cardTitle,
+              fontWeight: 600,
+              color: colors.text,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {app.title}
           </p>
           <p style={{ margin: 0, fontSize: font.sub, color: colors.textSub }}>{app.maker}</p>

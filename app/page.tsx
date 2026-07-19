@@ -42,7 +42,7 @@ function HomeContent() {
       <input
         value={query}
         onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
-        placeholder="무엇을 해볼까요? 이름으로 찾아요"
+        placeholder="검색"
         style={{
           width: "100%",
           height: 52,
