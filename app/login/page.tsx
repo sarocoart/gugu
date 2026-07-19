@@ -129,6 +129,26 @@ export default function LoginPage() {
     setBusy(false);
   };
 
+  // 비밀번호를 잊었을 때 — 재설정 메일을 보냅니다. 메일 링크가 /reset-password로 돌아와요.
+  const forgot = async () => {
+    if (!supabase) return;
+    setError("");
+    setNotice("");
+    const em = email.trim();
+    if (em === "" || !em.includes("@")) return setError("먼저 위에 이메일을 적어 주세요.");
+    setBusy(true);
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(em, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (err) setError("메일을 보내지 못했어요. 이메일을 다시 확인해 주세요.");
+      else setNotice("비밀번호 재설정 메일을 보냈어요! 메일함에서 링크를 눌러 주세요.");
+    } catch {
+      setError("잠시 문제가 생겼어요. 다시 시도해 주세요.");
+    }
+    setBusy(false);
+  };
+
   return (
     <div style={{ padding: "24px 16px", maxWidth: 440, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
@@ -160,9 +180,22 @@ export default function LoginPage() {
         onClick={submit}
       />
 
-      <p style={{ fontSize: font.sub, color: colors.textSub, textAlign: "center", marginTop: 14 }}>
-        비밀번호를 잊었다면 빌트마켓의 "비밀번호 찾기"를 이용해 주세요. 같은 계정이에요.
-      </p>
+      <button
+        onClick={forgot}
+        style={{
+          display: "block",
+          margin: "14px auto 0",
+          background: "none",
+          border: "none",
+          color: colors.textSub,
+          fontSize: font.sub,
+          fontWeight: 600,
+          textDecoration: "underline",
+          cursor: "pointer",
+        }}
+      >
+        비밀번호를 잊었나요? 재설정 메일 받기
+      </button>
     </div>
   );
 }

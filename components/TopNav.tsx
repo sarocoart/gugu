@@ -15,7 +15,7 @@ export const navItems = [
 ];
 
 // PC에서만 보이는 상단 가로 바. 모바일에선 CSS(.gugu-topnav)가 숨깁니다.
-// 왼쪽: 로고 + 로그인(로그아웃) / 오른쪽: 홈 · 내 둥지 · 빌트마켓 GO!
+// 왼쪽: 로그인(로그아웃) / 정중앙: 구구마켓 로고 / 오른쪽: 홈 · 내 둥지 · 빌트마켓 GO!
 export default function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function TopNav() {
       className="gugu-topnav"
       style={{
         alignItems: "center",
-        gap: 24,
+        justifyContent: "space-between",
         padding: "14px 24px",
         background: colors.surface,
         borderBottom: `1px solid ${colors.line}`,
@@ -50,19 +50,7 @@ export default function TopNav() {
         zIndex: 10,
       }}
     >
-      <Link
-        href="/"
-        style={{
-          fontSize: font.title,
-          fontWeight: 700,
-          color: colors.text,
-          textDecoration: "none",
-        }}
-      >
-        {labels.serviceName} 🕊️
-      </Link>
-
-      {/* 로고 바로 옆 — 로그인/로그아웃 */}
+      {/* 왼쪽 — 로그인/로그아웃 */}
       {user ? (
         <button
           onClick={logout}
@@ -76,7 +64,6 @@ export default function TopNav() {
             fontSize: font.sub,
             fontWeight: 600,
             cursor: "pointer",
-            marginRight: "auto",
           }}
         >
           {user.nickname}님 · 로그아웃
@@ -95,50 +82,69 @@ export default function TopNav() {
             fontSize: font.sub,
             fontWeight: 600,
             textDecoration: "none",
-            marginRight: "auto",
           }}
         >
           👤 로그인
         </Link>
       )}
 
-      {navItems.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            style={{
-              fontSize: font.body,
-              fontWeight: active ? 600 : 400,
-              color: active ? colors.active : colors.textSub,
-              textDecoration: "none",
-            }}
-          >
-            <span aria-hidden="true">{item.icon}</span> {item.label}
-          </Link>
-        );
-      })}
-
-      {/* 홈·내 둥지 옆 — 빌트마켓 GO! (새 탭) */}
-      <a
-        href={links.bilt}
-        target="_blank"
-        rel="noopener noreferrer"
+      {/* 정중앙 — 구구마켓 로고 (글자와 비둘기를 세로 중앙 정렬) */}
+      <Link
+        href="/"
         style={{
-          height: 40,
-          lineHeight: "40px",
-          padding: "0 18px",
-          borderRadius: 20,
-          background: colors.orange,
-          color: "#FFFFFF",
-          fontSize: font.sub,
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: font.title,
           fontWeight: 700,
+          color: colors.text,
           textDecoration: "none",
         }}
       >
-        🛒 빌트마켓 GO!
-      </a>
+        구구마켓 <span aria-hidden="true" style={{ fontSize: 24, lineHeight: 1 }}>🕊️</span>
+      </Link>
+
+      {/* 오른쪽 — 홈 · 내 둥지 · 빌트마켓 GO! */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {navItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              style={{
+                fontSize: font.body,
+                fontWeight: active ? 600 : 400,
+                color: active ? colors.active : colors.textSub,
+                textDecoration: "none",
+              }}
+            >
+              <span aria-hidden="true">{item.icon}</span> {item.label}
+            </Link>
+          );
+        })}
+        <a
+          href={links.bilt}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            height: 40,
+            lineHeight: "40px",
+            padding: "0 18px",
+            borderRadius: 20,
+            background: colors.orange,
+            color: "#FFFFFF",
+            fontSize: font.sub,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          🛒 빌트마켓 GO!
+        </a>
+      </div>
     </nav>
   );
 }
