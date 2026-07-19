@@ -212,9 +212,9 @@ export default function AppCard({
           onClick={onHeart}
           aria-label={saved ? labels.unsave : labels.save}
           style={{
-            minWidth: 56,
+            flex: 1,
             height: 48,
-            padding: "0 12px",
+            padding: "0 10px",
             borderRadius: 24,
             border: saved ? "none" : `1px solid ${colors.line}`,
             background: saved ? colors.orangeSoft : colors.surface,
@@ -226,11 +226,11 @@ export default function AppCard({
             alignItems: "center",
             justifyContent: "center",
             gap: 6,
-            flexShrink: 0,
+            whiteSpace: "nowrap",
           }}
         >
           <span aria-hidden="true">{saved ? "💛" : "🤍"}</span>
-          {savedCount}
+          {saved ? savedCount : labels.save}
         </button>
       </div>
     </div>
