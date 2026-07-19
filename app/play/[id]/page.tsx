@@ -162,6 +162,32 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         </button>
       </div>
 
+      {app.url ? (
+        <div>
+          {/* 게임이 화면 가득 — 좌우는 브라우저 끝까지, 높이는 화면 높이만큼 */}
+          <div className="gugu-fullbleed" style={{ marginTop: 10 }}>
+            <iframe
+              src={app.url}
+              title={app.title}
+              style={{
+                display: "block",
+                width: "100%",
+                height: "calc(100vh - 150px)",
+                minHeight: 420,
+                border: "none",
+                borderTop: `1px solid ${colors.line}`,
+                borderBottom: `1px solid ${colors.line}`,
+                background: colors.surface,
+              }}
+            />
+          </div>
+          <div style={{ padding: "12px 16px 0" }}>
+            <p style={{ textAlign: "center", fontSize: font.sub, color: colors.textSub, margin: "0 0 8px" }}>
+              화면이 안 보이면 아래 버튼을 눌러 주세요.
+            </p>
+            <RunButton wide label={labels.runNewTab} onClick={openNewTab} />
+          </div>
+
       {/* 작품 소개 · 통계 · 만든 사람 */}
       <div style={{ padding: "14px 16px 0" }}>
         <p style={{ margin: 0, fontSize: font.body, color: colors.text, lineHeight: 1.6 }}>{app.desc}</p>
@@ -189,23 +215,6 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {app.url ? (
-        <div style={{ padding: 16 }}>
-          <iframe
-            src={app.url}
-            title={app.title}
-            style={{
-              width: "100%",
-              height: "min(62vh, 560px)",
-              border: `1px solid ${colors.line}`,
-              borderRadius: 18,
-              background: colors.surface,
-            }}
-          />
-          <p style={{ textAlign: "center", fontSize: font.sub, color: colors.textSub, margin: "12px 0 8px" }}>
-            화면이 안 보이면 아래 버튼을 눌러 주세요.
-          </p>
-          <RunButton wide label={labels.runNewTab} onClick={openNewTab} />
         </div>
       ) : (
         <div style={{ textAlign: "center", padding: "48px 20px" }}>

@@ -44,7 +44,10 @@ function HomeContent() {
         onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         placeholder="검색"
         style={{
+          display: "block",
           width: "100%",
+          maxWidth: 560,
+          margin: "0 auto 14px",
           height: 52,
           borderRadius: 26,
           border: `1px solid ${colors.line}`,
@@ -53,7 +56,6 @@ function HomeContent() {
           fontSize: font.body,
           color: colors.text,
           outline: "none",
-          marginBottom: 14,
         }}
       />
 

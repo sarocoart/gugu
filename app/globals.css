@@ -40,6 +40,11 @@ a {
 .gugu-topnav {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 880px;   /* 본문과 같은 폭 — 메뉴가 중앙 쪽으로 들어옵니다 */
+  margin: 0 auto;
+  position: relative;  /* 로고 중앙 배치 기준 */
 }
 
 /* 로고는 PC에서만 (모바일은 공간이 좁아서 숨김) */
@@ -69,7 +74,7 @@ a {
 
 @media (min-width: 760px) {
   .gugu-shell {
-    max-width: 1120px;
+    max-width: 880px;   /* 아늑한 폭으로 축소 */
     padding: 0 24px 32px;
   }
 
@@ -94,8 +99,8 @@ a {
 
   /* PC에선 카드가 3~4개씩 넓게 */
   .gugu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;   /* 880px 폭에서 한 줄에 3개가 됩니다 */
   }
 
   .gugu-chips {
@@ -105,3 +110,11 @@ a {
 }
 
 
+
+/* 실행 화면의 게임 영역 — 본문 폭을 뚫고 화면 끝까지 펼칩니다 */
+.gugu-fullbleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+}

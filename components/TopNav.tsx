@@ -38,9 +38,7 @@ export default function TopNav() {
 
   return (
     <nav
-      className="gugu-topnav"
       style={{
-        alignItems: "center",
         padding: "14px 20px",
         background: colors.surface,
         borderBottom: `1px solid ${colors.line}`,
@@ -49,6 +47,7 @@ export default function TopNav() {
         zIndex: 10,
       }}
     >
+      <div className="gugu-topnav">
       {/* 왼쪽 — 로그인/로그아웃 */}
       {user ? (
         <button
@@ -69,15 +68,9 @@ export default function TopNav() {
         <Link
           href="/login"
           style={{
-            height: 40,
-            lineHeight: "40px",
-            padding: "0 16px",
-            borderRadius: 20,
-            border: `1px solid ${colors.line}`,
-            background: colors.surface,
             color: colors.text,
-            fontSize: font.sub,
-            fontWeight: 600,
+            fontSize: font.body,
+            fontWeight: 500,
             textDecoration: "none",
           }}
         >
@@ -142,6 +135,7 @@ export default function TopNav() {
           🛒 빌트마켓 GO!
         </a>
       )}
+      </div>
     </nav>
   );
 }
