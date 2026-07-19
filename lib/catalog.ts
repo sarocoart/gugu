@@ -2,6 +2,7 @@
 // 그래서 어느 기기에서든, 누구에게든 같은 작품 목록이 보여요.
 // 화면들은 이 파일의 함수만 쓰면 되고, 저장 방식이 바뀌어도 화면은 그대로예요.
 import { supabase } from "./supabase";
+import { getMyApps as getLocalMyApps, clearMyApps as clearLocalMyApps } from "./storage";
 import type { GuguApp } from "./data";
 import { categories } from "./labels";
 
@@ -153,4 +154,23 @@ export function matchesQuery(app: GuguApp, query: string): boolean {
     .join(" ")
     .toLowerCase();
   return q.split(/\s+/).every((word) => haystack.includes(word));
+}
+
+// 예전 방식(브라우저에만 저장)으로 올린 작품이 남아 있으면 서버로 이사시킵니다.
+// 로그인 상태에서 홈이나 마이 페이지를 열면 자동으로 한 번 실행돼요. (이사 후엔 할 일 없음)
+export async function migrateLocalWorks(): Promise<boolean> {
+  if (!supabase) return false;
+  const locals = getLocalMyApps();
+  if (locals.length === 0) return false;
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (!data || !data.user) return false; // 로그인해야 계정에 붙여 저장할 수 있어요
+    for (const a of locals) {
+      await insertApp(a); // 하나 실패해도 다음 것 진행
+    }
+    clearLocalMyApps();
+    return true;
+  } catch {
+    return false;
+  }
 }

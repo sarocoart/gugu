@@ -10,21 +10,19 @@ import type { GuguApp } from "@/lib/data";
 import {
   fetchAllApps,
   fetchMyApps,
-  insertApp,
   deleteApp,
   setAppHidden,
+  migrateLocalWorks,
 } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import {
   getSaved,
   getPlayed,
-  getMyApps as getLocalMyApps,
   removeSaved,
   removePlayed,
   clearSaved,
   clearPlayed,
-  clearMyApps as clearLocalMyApps,
 } from "@/lib/storage";
 import { supabase, getCurrentUser, type GuguUser } from "@/lib/supabase";
 
@@ -59,14 +57,7 @@ export default function NestPage() {
     const all = await fetchAllApps();
     setAllApps(all);
     if (u) {
-      // 예전 방식(이 브라우저에만 저장)으로 올린 작품이 남아 있으면 서버로 이사시킵니다. (한 번만)
-      const locals = getLocalMyApps();
-      if (locals.length > 0) {
-        for (const a of locals) {
-          await insertApp(a); // 실패해도 다음 것 진행
-        }
-        clearLocalMyApps();
-      }
+      await migrateLocalWorks(); // 옛 브라우저 저장 작품이 있으면 서버로 이사 (한 번만)
       setMyApps(await fetchMyApps(u.id));
     } else {
       setMyApps([]);
@@ -91,10 +82,13 @@ export default function NestPage() {
   // 현재 탭에 보여줄 작품 목록
   let list: GuguApp[] = [];
   const findIn = (id: string) => allApps.find((a) => a.id === id) ?? myApps.find((a) => a.id === id);
+  // 지워진 작품의 옛 기록은 걸러내고, 실제 보이는 카드 수만 셉니다.
+  const savedList = savedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
+  const playedList = playedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
   if (tab === "saved") {
-    list = savedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
+    list = savedList;
   } else if (tab === "played") {
-    list = playedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
+    list = playedList;
   } else {
     // 내가 올린 것 — 고른 순위 기준으로 정렬합니다.
     const savedNum = (id: string) => (savedIds.includes(id) ? 1 : 0);
@@ -127,7 +121,12 @@ export default function NestPage() {
   };
 
   // 아래 추천 목록: 아직 담지 않은 작품들 (최대 6개)
-  const suggestions = allApps.filter((a) => !savedIds.includes(a.id)).slice(0, 6);
+  // 추천: 아직 안 담은 작품 → 전부 담았다면 조회수 높은 인기 작품으로 대신 채웁니다.
+  const notSaved = allApps.filter((a) => !savedIds.includes(a.id));
+  const suggestions = (
+    notSaved.length > 0 ? notSaved : [...allApps].sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+  ).slice(0, 6);
+  const suggestTitle = notSaved.length > 0 ? "이런 것도 담아 보세요" : "요즘 인기 작품";
 
   const tabStyle = (active: boolean) => ({
     flex: 1,
@@ -190,10 +189,10 @@ export default function NestPage() {
 
       <div style={{ display: "flex", gap: 8, padding: 16 }}>
         <button style={tabStyle(tab === "saved")} onClick={() => switchTab("saved")}>
-          💛 {labels.saved} {savedIds.length > 0 ? savedIds.length : ""}
+          💛 {labels.saved} {savedList.length > 0 ? savedList.length : ""}
         </button>
         <button style={tabStyle(tab === "played")} onClick={() => switchTab("played")}>
-          ▶️ {labels.played} {playedIds.length > 0 ? playedIds.length : ""}
+          ▶️ {labels.played} {playedList.length > 0 ? playedList.length : ""}
         </button>
         <button style={tabStyle(tab === "mine")} onClick={() => switchTab("mine")}>
           ✨ {labels.myUploads} {myApps.length > 0 ? myApps.length : ""}
@@ -337,7 +336,7 @@ export default function NestPage() {
       {suggestions.length > 0 && (
         <section style={{ padding: "24px 16px 8px" }}>
           <h2 style={{ margin: "0 4px 12px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
-            이런 것도 담아 보세요
+            {suggestTitle}
           </h2>
           <div className="gugu-grid">
             {suggestions.map((app) => (

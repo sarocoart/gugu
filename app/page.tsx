@@ -6,7 +6,7 @@ import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
 import Pigeon from "@/components/Pigeon";
 import type { GuguApp } from "@/lib/data";
-import { fetchAllApps, matchesQuery } from "@/lib/catalog";
+import { fetchAllApps, matchesQuery, migrateLocalWorks } from "@/lib/catalog";
 import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
 import { links, features } from "@/lib/features";
@@ -24,6 +24,7 @@ function HomeContent() {
     // 서버에서 전체 작품을 불러온 뒤, 최근에 본 작품이 앞에 오도록 정렬합니다.
     let alive = true;
     (async () => {
+      await migrateLocalWorks(); // 옛 브라우저 저장 작품이 있으면 서버로 이사 (한 번만)
       const all = await fetchAllApps();
       const playedIds = getPlayed();
       const rank = (a: GuguApp) => {
