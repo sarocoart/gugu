@@ -10,7 +10,7 @@ import { findApp, getAllApps } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved, markPlayed, addView } from "@/lib/storage";
+import { isSaved, toggleSaved, markPlayed, addView, getViews } from "@/lib/storage";
 
 export default function PlayPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -19,6 +19,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [others, setOthers] = useState<GuguApp[]>([]); // 아래에 보여줄 다른 작품들
+  const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
     const found = findApp(params.id);
@@ -28,6 +29,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     setOthers(getAllApps().filter((a) => a.id !== params.id).slice(0, 6));
     if (found) {
       addView(found.id); // 조회수 1 올리기
+      setViewCount(getViews()[found.id] ?? 0);
       setSaved(isSaved(found.id));
       if (found.url) markPlayed(found.id);
     }
@@ -148,6 +150,33 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         >
           {copied ? "복사됨 ✓" : "📤 공유"}
         </button>
+      </div>
+
+      {/* 작품 소개 · 통계 · 만든 사람 */}
+      <div style={{ padding: "14px 16px 0" }}>
+        <p style={{ margin: 0, fontSize: font.body, color: colors.text, lineHeight: 1.6 }}>{app.desc}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: font.sub, color: colors.textSub, fontWeight: 600 }}>
+            조회 {viewCount} · {saved ? "💛" : "🤍"} 담김 {saved ? 1 : 0}
+          </span>
+          <button
+            onClick={() => router.push(`/maker/${encodeURIComponent(app.maker)}`)}
+            style={{
+              height: 40,
+              padding: "0 14px",
+              borderRadius: 20,
+              border: `1px solid ${colors.line}`,
+              background: colors.surface,
+              color: colors.mintText,
+              fontSize: font.sub,
+              fontWeight: 700,
+              cursor: "pointer",
+              marginLeft: "auto",
+            }}
+          >
+            🕊️ {app.maker}님 작품 더 보기
+          </button>
+        </div>
       </div>
 
       {app.url ? (

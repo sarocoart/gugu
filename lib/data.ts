@@ -10,6 +10,7 @@ export type GuguApp = {
   url: string;         // 실행 URL — 비워두면 "준비 중" 표시
   maker: string;       // 제작자 이름
   tags?: string[];     // 검색 단어 — 제목에 없는 말로도 찾아지게 (예: ["운동","건강"])
+  contact?: string;    // 연락 받을 주소 — 오픈채팅 링크 또는 이메일 (제작 의뢰용)
   minutes?: number;    // 소요 시간(분), 선택
   createdAt?: number;  // 올린 시각 — 7일 안이면 NEW 배지가 붙어요
   hidden?: boolean;    // true면 홈에서 숨겨져요 (내가 올린 것에서만 보임)

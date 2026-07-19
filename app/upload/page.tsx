@@ -85,6 +85,7 @@ function UploadContent() {
   const [url, setUrl] = useState("");
   const [maker, setMaker] = useState("");
   const [tagsText, setTagsText] = useState(""); // 검색 단어 (쉼표로 구분)
+  const [contact, setContact] = useState(""); // 연락 받을 주소 (오픈채팅/이메일)
   const [error, setError] = useState("");
 
   // 수정 모드면 기존 내용을 칸에 채워 넣습니다.
@@ -99,6 +100,7 @@ function UploadContent() {
       setUrl(found.url);
       setMaker(found.maker);
       setTagsText((found.tags ?? []).join(", "));
+      setContact(found.contact ?? "");
     }
   }, [editId]);
 
@@ -145,6 +147,7 @@ function UploadContent() {
           url: url.trim(),
           maker: maker.trim(),
           tags: tags.length > 0 ? tags : undefined,
+          contact: contact.trim() || undefined,
         });
         router.push("/nest");
         return;
@@ -161,6 +164,7 @@ function UploadContent() {
       url: url.trim(),
       maker: maker.trim(),
       tags: tags.length > 0 ? tags : undefined,
+      contact: contact.trim() || undefined,
       createdAt: Date.now(),
     };
     addMyApp(newApp);
@@ -299,6 +303,12 @@ function UploadContent() {
         value={tagsText}
         onChange={setTagsText}
         placeholder="쉼표로 구분해요. 예: 운동, 건강, 스트레칭"
+      />
+      <Field
+        label="제작 의뢰 받을 주소 (선택)"
+        value={contact}
+        onChange={setContact}
+        placeholder="카카오 오픈채팅 링크 또는 이메일"
       />
 
       {error && (
