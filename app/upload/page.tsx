@@ -8,45 +8,7 @@ import type { GuguApp } from "@/lib/data";
 import { categories, labels, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import { addMyApp, getMyApps, updateMyApp } from "@/lib/storage";
-
-// 입력 한 줄을 그리는 작은 도우미
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  required?: boolean;
-}) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-        {label} {required && <span style={{ color: colors.orange }}>*</span>}
-      </label>
-      <input
-        value={value}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          height: 48,
-          borderRadius: 14,
-          border: `1px solid ${colors.line}`,
-          background: colors.surface,
-          padding: "0 16px",
-          fontSize: font.body,
-          color: colors.text,
-          outline: "none",
-        }}
-      />
-    </div>
-  );
-}
+import Field from "@/components/FormField";
 
 // 고른 그림 파일을 카드에 알맞은 크기로 줄여서 돌려줍니다.
 // (큰 사진을 그대로 저장하면 브라우저 저장 공간이 금방 차서, 자동으로 줄여요)

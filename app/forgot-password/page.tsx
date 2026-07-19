@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import { colors, font } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import Field from "@/components/FormField";
 
 // 비밀번호 찾기 — 가입한 이메일로 재설정 링크를 보냅니다.
 // 메일의 링크를 누르면 /reset-password(새 비밀번호 정하기)로 돌아와요.
@@ -100,27 +101,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-          이메일
-        </label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          style={{
-            width: "100%",
-            height: 48,
-            borderRadius: 14,
-            border: `1px solid ${colors.line}`,
-            background: colors.surface,
-            padding: "0 16px",
-            fontSize: font.body,
-            color: colors.text,
-            outline: "none",
-            marginBottom: 14,
-          }}
-        />
+        <Field label="이메일" value={email} onChange={setEmail} placeholder="you@example.com" type="email" />
 
         {error && (
           <p style={{ color: "#C0392B", fontSize: font.sub, margin: "0 0 12px", fontWeight: 600 }}>{error}</p>

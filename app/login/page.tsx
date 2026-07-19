@@ -1,55 +1,17 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import { colors, font } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import Field from "@/components/FormField";
 
 // 로그인 화면 — 버튼 하나("시작하기")로 로그인과 가입을 모두 처리합니다.
 // 1) 계정이 있으면 바로 로그인
 // 2) 처음이면 닉네임 한 칸이 나타나고, 한 번 더 누르면 가입 완료
 // 빌트마켓과 같은 서버라 계정이 서로 통합니다.
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  type?: string;
-}) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          height: 48,
-          borderRadius: 14,
-          border: `1px solid ${colors.line}`,
-          background: colors.surface,
-          padding: "0 16px",
-          fontSize: font.body,
-          color: colors.text,
-          outline: "none",
-        }}
-      />
-    </div>
-  );
-}
 
 export default function LoginPage() {
   const router = useRouter();

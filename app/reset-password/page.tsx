@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import { colors, font } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import Field from "@/components/FormField";
 
 // 새 비밀번호 정하기 — 재설정 메일의 링크를 누르면 이 화면으로 돌아옵니다.
 // (메일 링크로 들어오면 잠시 로그인된 상태가 되어, 새 비밀번호를 저장할 수 있어요)
@@ -60,18 +61,6 @@ export default function ResetPasswordPage() {
     );
   }
 
-  const inputStyle = {
-    width: "100%",
-    height: 48,
-    borderRadius: 14,
-    border: `1px solid ${colors.line}`,
-    background: colors.surface,
-    padding: "0 16px",
-    fontSize: font.body,
-    color: colors.text,
-    outline: "none",
-  } as const;
-
   return (
     <div style={{ padding: "24px 16px", maxWidth: 440, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
@@ -84,30 +73,8 @@ export default function ResetPasswordPage() {
         </p>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-          새 비밀번호
-        </label>
-        <input
-          type="password"
-          value={pw1}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setPw1(e.target.value)}
-          placeholder="6자 이상"
-          style={inputStyle}
-        />
-      </div>
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
-          한 번 더
-        </label>
-        <input
-          type="password"
-          value={pw2}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setPw2(e.target.value)}
-          placeholder="같은 비밀번호"
-          style={inputStyle}
-        />
-      </div>
+      <Field label="새 비밀번호" value={pw1} onChange={setPw1} placeholder="6자 이상" type="password" />
+      <Field label="한 번 더" value={pw2} onChange={setPw2} placeholder="같은 비밀번호" type="password" />
 
       {error && (
         <p style={{ color: "#C0392B", fontSize: font.sub, margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
