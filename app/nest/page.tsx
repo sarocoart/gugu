@@ -25,6 +25,7 @@ import {
   getViews,
   toggleHideMyApp,
 } from "@/lib/storage";
+import { supabase, getCurrentUser, type GuguUser } from "@/lib/supabase";
 
 type Tab = "saved" | "played" | "mine";
 type MineSort = "recent" | "views" | "saves"; // 내가 올린 것 정렬: 최신순/조회순/담김순
@@ -39,6 +40,21 @@ export default function NestPage() {
   const [views, setViews] = useState<Record<string, number>>({});
   const [mineSort, setMineSort] = useState<MineSort>("recent");
   const [clearing, setClearing] = useState(false); // "전체 비우기" 확인창 표시 여부
+  const [user, setUser] = useState<GuguUser | null>(null); // 로그인한 사용자 (서버 연결 후)
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+  }, []);
+
+  const logout = async () => {
+    if (!supabase) return;
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // 무시
+    }
+    setUser(null);
+  };
 
   // 저장소에서 현재 상태를 다시 읽어옵니다 (담기/삭제 후에도 호출).
   const refresh = () => {
@@ -129,6 +145,51 @@ export default function NestPage() {
         <h1 style={{ margin: "8px 0 0", fontSize: font.title, fontWeight: 700, color: colors.text }}>
           {labels.mypage}
         </h1>
+        {/* 로그인 상태 — 서버 연결 후 활성화됩니다 */}
+        {supabase && (
+          <div style={{ marginTop: 12 }}>
+            {user ? (
+              <div style={{ display: "flex", gap: 8, justifyContent: "center", alignItems: "center" }}>
+                <span style={{ fontSize: font.body, color: colors.text, fontWeight: 600 }}>
+                  🕊️ {user.nickname}님
+                </span>
+                <button
+                  onClick={logout}
+                  style={{
+                    height: 40,
+                    padding: "0 14px",
+                    borderRadius: 20,
+                    border: `1px solid ${colors.line}`,
+                    background: colors.surface,
+                    color: colors.textSub,
+                    fontSize: font.sub,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => router.push("/login")}
+                style={{
+                  height: 44,
+                  padding: "0 20px",
+                  borderRadius: 22,
+                  border: "none",
+                  background: colors.orangeSoft,
+                  color: colors.orangeText,
+                  fontSize: font.body,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                🔑 로그인 · 빌트마켓 계정 사용 가능
+              </button>
+            )}
+          </div>
+        )}
       </header>
 
       <div style={{ display: "flex", gap: 8, padding: 16 }}>

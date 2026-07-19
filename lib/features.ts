@@ -6,3 +6,8 @@ export const features = {
   badges: false,     // 배지 수집 — 3단계
   biltLink: false,   // 빌트마켓 구매 연결 — 나중에
 } as const;
+
+// 서로 오가는 주소 — 바뀌면 여기만 고치면 됩니다.
+export const links = {
+  bilt: "https://marketplace-lake-one.vercel.app", // 빌트마켓 (거래소)
+} as const;

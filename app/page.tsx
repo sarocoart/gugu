@@ -9,6 +9,7 @@ import type { GuguApp } from "@/lib/data";
 import { getAllApps, matchesQuery } from "@/lib/catalog";
 import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
+import { links } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
 
 // 첫 화면 = 검색 + 카테고리 + 전체 작품. (구경 화면과 합쳤습니다)
@@ -96,6 +97,44 @@ function HomeContent() {
           ))}
         </div>
       )}
+
+      {/* 빌트마켓으로 가는 다리 — 주소는 lib/features.ts의 links에서 관리 */}
+      <section style={{ padding: "28px 0 8px" }}>
+        <div
+          style={{
+            background: colors.mocha,
+            borderRadius: 20,
+            padding: "22px 16px",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ margin: "0 0 4px", fontSize: font.cardTitle, fontWeight: 700, color: colors.text }}>
+            내가 만든 작품, 팔아보고 싶다면?
+          </p>
+          <p style={{ margin: "0 0 14px", fontSize: font.sub, color: colors.textSub }}>
+            빌트마켓은 만든 것을 사고파는 곳이에요
+          </p>
+          <a
+            href={links.bilt}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              height: 48,
+              lineHeight: "48px",
+              padding: "0 24px",
+              borderRadius: 24,
+              background: colors.orange,
+              color: "#FFFFFF",
+              fontSize: font.body,
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            🛒 빌트마켓 가기
+          </a>
+        </div>
+      </section>
     </div>
   );
 }
