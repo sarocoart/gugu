@@ -7,7 +7,8 @@ import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { addMyApp, getMyApps, updateMyApp } from "@/lib/storage";
+import { fetchApp, insertApp, updateApp } from "@/lib/catalog";
+import { getCurrentUser, type GuguUser } from "@/lib/supabase";
 import Field from "@/components/FormField";
 
 // 고른 그림 파일을 카드에 알맞은 크기로 줄여서 돌려줍니다.
@@ -49,21 +50,33 @@ function UploadContent() {
   const [tagsText, setTagsText] = useState(""); // 검색 단어 (쉼표로 구분)
   const [contact, setContact] = useState(""); // 연락 받을 주소 (오픈채팅/이메일)
   const [error, setError] = useState("");
+  const [user, setUser] = useState<GuguUser | null>(null);
+  const [checked, setChecked] = useState(false); // 로그인 확인이 끝났는지
 
-  // 수정 모드면 기존 내용을 칸에 채워 넣습니다.
+  // 로그인 상태 확인 — 작품은 계정에 붙어 저장되므로 로그인이 필요해요.
+  useEffect(() => {
+    getCurrentUser().then((u) => {
+      setUser(u);
+      setChecked(true);
+    });
+  }, []);
+
+  // 수정 모드면 서버에서 기존 내용을 불러와 칸에 채워 넣습니다.
   useEffect(() => {
     if (!editId) return;
-    const found = getMyApps().find((a) => a.id === editId);
-    if (found) {
-      setTitle(found.title);
-      setDesc(found.desc);
-      setCategory(found.category);
-      setImage(found.image ?? "");
-      setUrl(found.url);
-      setMaker(found.maker);
-      setTagsText((found.tags ?? []).join(", "));
-      setContact(found.contact ?? "");
-    }
+    (async () => {
+      const found = await fetchApp(editId);
+      if (found) {
+        setTitle(found.title);
+        setDesc(found.desc);
+        setCategory(found.category);
+        setImage(found.image ?? "");
+        setUrl(found.url);
+        setMaker(found.maker);
+        setTagsText((found.tags ?? []).join(", "));
+        setContact(found.contact ?? "");
+      }
+    })();
   }, [editId]);
 
   // 그림 파일을 골랐을 때
@@ -79,7 +92,7 @@ function UploadContent() {
     }
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (title.trim() === "") return setError("작품 이름을 적어 주세요.");
     if (maker.trim() === "") return setError("만든 사람 이름을 적어 주세요.");
     if (url.trim() !== "" && !/^https?:\/\//.test(url.trim())) {
@@ -96,10 +109,10 @@ function UploadContent() {
       .filter((t) => t !== "");
 
     if (editId) {
-      // 수정 모드 — 기존 작품을 찾아 내용만 바꿉니다 (올린 시각·숨김 상태는 유지).
-      const existing = getMyApps().find((a) => a.id === editId);
+      // 수정 모드 — 서버의 기존 작품을 찾아 내용만 바꿉니다.
+      const existing = await fetchApp(editId);
       if (existing) {
-        updateMyApp({
+        const ok = await updateApp({
           ...existing,
           title: title.trim(),
           desc: desc.trim() || "재밌는 작품이에요!",
@@ -111,6 +124,7 @@ function UploadContent() {
           tags: tags.length > 0 ? tags : undefined,
           contact: contact.trim() || undefined,
         });
+        if (!ok) return setError("저장하지 못했어요. 내 작품이 맞는지, 로그인 상태인지 확인해 주세요.");
         router.push("/nest");
         return;
       }
@@ -129,9 +143,26 @@ function UploadContent() {
       contact: contact.trim() || undefined,
       createdAt: Date.now(),
     };
-    addMyApp(newApp);
+    const ok = await insertApp(newApp);
+    if (!ok) return setError("올리지 못했어요. 로그인 상태를 확인하고 다시 시도해 주세요.");
     router.push("/nest");
   };
+
+  // 로그인 안 한 상태 — 작품을 계정에 붙여 저장해야 하므로 로그인으로 안내합니다.
+  if (checked && !user) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px" }}>
+        <Pigeon size={90} mood="hello" />
+        <p style={{ fontSize: font.body, color: colors.text, margin: "14px 0 6px", fontWeight: 600 }}>
+          작품을 올리려면 로그인해 주세요!
+        </p>
+        <p style={{ fontSize: font.sub, color: colors.textSub, margin: "0 0 18px" }}>
+          로그인하면 어느 기기에서든 내 작품을 관리할 수 있어요.
+        </p>
+        <RunButton label="로그인 하러 가기" onClick={() => router.push("/login")} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "20px 16px", maxWidth: 560, margin: "0 auto" }}>

@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import AppCard from "@/components/AppCard";
 import type { GuguApp } from "@/lib/data";
-import { getAllApps } from "@/lib/catalog";
-import { getViews, getSaved } from "@/lib/storage";
+import { fetchAllApps } from "@/lib/catalog";
+import { getSaved } from "@/lib/storage";
 import { colors, font } from "@/lib/theme";
 
 // 메이커 페이지 — 만든 사람의 프로필과 작품 전부를 보여줍니다.
@@ -23,15 +23,22 @@ export default function MakerPage({ params }: { params: { name: string } }) {
   const [noContactMsg, setNoContactMsg] = useState(false);
 
   useEffect(() => {
-    const list = getAllApps().filter((a) => a.maker === makerName);
-    setWorks(list);
-    const views = getViews();
-    const savedIds = getSaved();
-    setTotalViews(list.reduce((sum, a) => sum + (views[a.id] ?? 0), 0));
-    setTotalSaves(list.reduce((sum, a) => sum + (savedIds.includes(a.id) ? 1 : 0), 0));
-    // 이 메이커의 작품 중 연락 주소가 있는 첫 작품에서 가져옵니다.
-    const withContact = list.find((a) => a.contact && a.contact.trim() !== "");
-    setContact(withContact?.contact ?? "");
+    let alive = true;
+    (async () => {
+      const all = await fetchAllApps();
+      if (!alive) return;
+      const list = all.filter((a) => a.maker === makerName);
+      setWorks(list);
+      const savedIds = getSaved();
+      setTotalViews(list.reduce((sum, a) => sum + (a.views ?? 0), 0));
+      setTotalSaves(list.reduce((sum, a) => sum + (savedIds.includes(a.id) ? 1 : 0), 0));
+      // 이 메이커의 작품 중 연락 주소가 있는 첫 작품에서 가져옵니다.
+      const withContact = list.find((a) => a.contact && a.contact.trim() !== "");
+      setContact(withContact?.contact ?? "");
+    })();
+    return () => {
+      alive = false;
+    };
   }, [makerName]);
 
   // 채팅/제작 의뢰 — 이메일이면 메일 앱, 링크면 새 창으로.

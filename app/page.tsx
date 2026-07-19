@@ -6,7 +6,7 @@ import AppCard from "@/components/AppCard";
 import CategoryChip from "@/components/CategoryChip";
 import Pigeon from "@/components/Pigeon";
 import type { GuguApp } from "@/lib/data";
-import { getAllApps, matchesQuery } from "@/lib/catalog";
+import { fetchAllApps, matchesQuery } from "@/lib/catalog";
 import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
 import { links, features } from "@/lib/features";
@@ -21,15 +21,20 @@ function HomeContent() {
   const [apps, setApps] = useState<GuguApp[]>([]);
 
   useEffect(() => {
-    // 최근에 본 작품이 앞에 오도록 정렬합니다.
-    // getPlayed()는 최근 본 순서대로 id를 돌려줘요.
-    const all = getAllApps();
-    const playedIds = getPlayed();
-    const rank = (a: GuguApp) => {
-      const i = playedIds.indexOf(a.id);
-      return i === -1 ? playedIds.length : i; // 본 적 없으면 뒤로
+    // 서버에서 전체 작품을 불러온 뒤, 최근에 본 작품이 앞에 오도록 정렬합니다.
+    let alive = true;
+    (async () => {
+      const all = await fetchAllApps();
+      const playedIds = getPlayed();
+      const rank = (a: GuguApp) => {
+        const i = playedIds.indexOf(a.id);
+        return i === -1 ? playedIds.length : i; // 본 적 없으면 뒤로
+      };
+      if (alive) setApps([...all].sort((a, b) => rank(a) - rank(b)));
+    })();
+    return () => {
+      alive = false;
     };
-    setApps([...all].sort((a, b) => rank(a) - rank(b)));
   }, []);
 
   const list = apps.filter((a) => {

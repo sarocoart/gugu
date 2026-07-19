@@ -7,21 +7,24 @@ import AppCard from "@/components/AppCard";
 import MyAppCard from "@/components/MyAppCard";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
-import { findApp, getAllApps } from "@/lib/catalog";
+import {
+  fetchAllApps,
+  fetchMyApps,
+  insertApp,
+  deleteApp,
+  setAppHidden,
+} from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
 import {
   getSaved,
   getPlayed,
-  getMyApps,
+  getMyApps as getLocalMyApps,
   removeSaved,
   removePlayed,
-  removeMyApp,
   clearSaved,
   clearPlayed,
-  clearMyApps,
-  getViews,
-  toggleHideMyApp,
+  clearMyApps as clearLocalMyApps,
 } from "@/lib/storage";
 import { supabase, getCurrentUser, type GuguUser } from "@/lib/supabase";
 
@@ -35,14 +38,9 @@ export default function NestPage() {
   const [playedIds, setPlayedIds] = useState<string[]>([]);
   const [myApps, setMyApps] = useState<GuguApp[]>([]);
   const [allApps, setAllApps] = useState<GuguApp[]>([]);
-  const [views, setViews] = useState<Record<string, number>>({});
   const [mineSort, setMineSort] = useState<MineSort>("recent");
   const [clearing, setClearing] = useState(false); // "전체 비우기" 확인창 표시 여부
   const [user, setUser] = useState<GuguUser | null>(null); // 로그인한 사용자 (서버 연결 후)
-
-  useEffect(() => {
-    getCurrentUser().then(setUser);
-  }, []);
 
   const logout = async () => {
     if (!supabase) return;
@@ -54,17 +52,34 @@ export default function NestPage() {
     setUser(null);
   };
 
-  // 저장소에서 현재 상태를 다시 읽어옵니다 (담기/삭제 후에도 호출).
-  const refresh = () => {
+  // 서버와 브라우저에서 현재 상태를 다시 읽어옵니다 (담기/삭제 후에도 호출).
+  const refresh = async (u: GuguUser | null) => {
     setSavedIds(getSaved());
     setPlayedIds(getPlayed());
-    setMyApps(getMyApps());
-    setAllApps(getAllApps());
-    setViews(getViews());
+    const all = await fetchAllApps();
+    setAllApps(all);
+    if (u) {
+      // 예전 방식(이 브라우저에만 저장)으로 올린 작품이 남아 있으면 서버로 이사시킵니다. (한 번만)
+      const locals = getLocalMyApps();
+      if (locals.length > 0) {
+        for (const a of locals) {
+          await insertApp(a); // 실패해도 다음 것 진행
+        }
+        clearLocalMyApps();
+      }
+      setMyApps(await fetchMyApps(u.id));
+    } else {
+      setMyApps([]);
+    }
   };
 
   useEffect(() => {
-    refresh();
+    (async () => {
+      const u = await getCurrentUser();
+      setUser(u);
+      await refresh(u);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 탭이 바뀌면 확인창은 닫습니다.
@@ -75,14 +90,15 @@ export default function NestPage() {
 
   // 현재 탭에 보여줄 작품 목록
   let list: GuguApp[] = [];
+  const findIn = (id: string) => allApps.find((a) => a.id === id) ?? myApps.find((a) => a.id === id);
   if (tab === "saved") {
-    list = savedIds.map((id) => findApp(id)).filter((a): a is GuguApp => Boolean(a));
+    list = savedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
   } else if (tab === "played") {
-    list = playedIds.map((id) => findApp(id)).filter((a): a is GuguApp => Boolean(a));
+    list = playedIds.map(findIn).filter((a): a is GuguApp => Boolean(a));
   } else {
     // 내가 올린 것 — 고른 순위 기준으로 정렬합니다.
     const savedNum = (id: string) => (savedIds.includes(id) ? 1 : 0);
-    const viewNum = (id: string) => views[id] ?? 0;
+    const viewNum = (id: string) => myApps.find((a) => a.id === id)?.views ?? 0;
     list = [...myApps];
     if (mineSort === "views") list.sort((a, b) => viewNum(b.id) - viewNum(a.id));
     else if (mineSort === "saves") list.sort((a, b) => savedNum(b.id) - savedNum(a.id));
@@ -90,20 +106,24 @@ export default function NestPage() {
   }
 
   // 탭마다 지우는 곳이 다릅니다.
-  const handleRemove = (id: string) => {
+  const handleRemove = async (id: string) => {
     if (tab === "saved") removeSaved(id);
     else if (tab === "played") removePlayed(id);
-    else removeMyApp(id);
-    refresh();
+    else await deleteApp(id); // 서버에서 삭제 (내 작품만 가능)
+    await refresh(user);
   };
 
   // 현재 탭 전체 비우기
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (tab === "saved") clearSaved();
     else if (tab === "played") clearPlayed();
-    else clearMyApps();
+    else {
+      for (const a of myApps) {
+        await deleteApp(a.id);
+      }
+    }
     setClearing(false);
-    refresh();
+    await refresh(user);
   };
 
   // 아래 추천 목록: 아직 담지 않은 작품들 (최대 6개)
@@ -281,7 +301,14 @@ export default function NestPage() {
       {list.length === 0 ? (
         <div style={{ textAlign: "center", padding: "24px 20px" }}>
           <Pigeon size={80} mood="empty" />
-          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 0" }}>{emptyText}</p>
+          <p style={{ fontSize: font.body, color: colors.text, margin: "12px 0 0" }}>
+            {tab === "mine" && !user ? "로그인하면 어느 기기에서든 내 작품이 보여요!" : emptyText}
+          </p>
+          {tab === "mine" && !user && (
+            <div style={{ marginTop: 14 }}>
+              <RunButton label="로그인 하러 가기" onClick={() => router.push("/login")} />
+            </div>
+          )}
         </div>
       ) : (
         <div className={tab === "mine" ? "gugu-list" : "gugu-grid"} style={{ padding: "0 16px" }}>
@@ -290,16 +317,17 @@ export default function NestPage() {
               <MyAppCard
                 key={app.id}
                 app={app}
-                statsText={`조회 ${views[app.id] ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`}
+                statsText={`조회 ${app.views ?? 0} · 💛 담김 ${savedIds.includes(app.id) ? 1 : 0}`}
                 onEdit={(id) => router.push(`/upload?edit=${id}`)}
-                onToggleHide={(id) => {
-                  toggleHideMyApp(id);
-                  refresh();
+                onToggleHide={async (id) => {
+                  const cur = myApps.find((a) => a.id === id);
+                  await setAppHidden(id, !(cur?.hidden ?? false));
+                  await refresh(user);
                 }}
                 onRemove={handleRemove}
               />
             ) : (
-              <AppCard key={app.id} app={app} onRemove={handleRemove} onSavedChange={refresh} />
+              <AppCard key={app.id} app={app} onRemove={handleRemove} onSavedChange={() => refresh(user)} />
             )
           )}
         </div>
@@ -313,7 +341,7 @@ export default function NestPage() {
           </h2>
           <div className="gugu-grid">
             {suggestions.map((app) => (
-              <AppCard key={app.id} app={app} onSavedChange={refresh} />
+              <AppCard key={app.id} app={app} onSavedChange={() => refresh(user)} />
             ))}
           </div>
         </section>

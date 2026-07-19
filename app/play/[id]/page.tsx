@@ -6,11 +6,11 @@ import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import AppCard from "@/components/AppCard";
 import type { GuguApp } from "@/lib/data";
-import { findApp, getAllApps } from "@/lib/catalog";
+import { fetchApp, fetchAllApps, addServerView } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved, markPlayed, addView, getViews } from "@/lib/storage";
+import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
 
 export default function PlayPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -22,17 +22,25 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
-    const found = findApp(params.id);
-    setApp(found);
-    setReady(true);
-    // 지금 보는 작품을 뺀 나머지를 아래 추천으로 보여줍니다.
-    setOthers(getAllApps().filter((a) => a.id !== params.id).slice(0, 6));
-    if (found) {
-      addView(found.id); // 조회수 1 올리기
-      setViewCount(getViews()[found.id] ?? 0);
-      setSaved(isSaved(found.id));
-      if (found.url) markPlayed(found.id);
-    }
+    let alive = true;
+    (async () => {
+      const found = await fetchApp(params.id);
+      if (!alive) return;
+      setApp(found);
+      setReady(true);
+      // 지금 보는 작품을 뺀 나머지를 아래 추천으로 보여줍니다.
+      const all = await fetchAllApps();
+      if (alive) setOthers(all.filter((a) => a.id !== params.id).slice(0, 6));
+      if (found) {
+        addServerView(found.id); // 서버 조회수 1 올리기 (모두에게 집계)
+        setViewCount((found.views ?? 0) + 1);
+        setSaved(isSaved(found.id));
+        if (found.url) markPlayed(found.id);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, [params.id]);
 
   if (!ready) {

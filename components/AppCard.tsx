@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved, getViews } from "@/lib/storage";
+import { isSaved, toggleSaved } from "@/lib/storage";
 
 // 큰 그림 카드 — 홈과 내 둥지(담은 것/해본 것)에서 함께 씁니다.
 // 제목은 가운데 정렬, 담기는 하트 색과 숫자로 표시합니다.
@@ -22,7 +22,7 @@ export default function AppCard({
   const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [removing, setRemoving] = useState(false); // ✕ 두 번 확인용
-  const [viewCount, setViewCount] = useState(0);
+  const viewCount = app.views ?? 0; // 조회수는 서버에서 작품과 함께 옵니다
   const cat = categories.find((c) => c.id === app.category);
 
   // 담긴 숫자 — 지금은 이 브라우저 기준(0 또는 1), 서버 연결 후 전체 숫자로 바뀝니다.
@@ -32,7 +32,6 @@ export default function AppCard({
 
   useEffect(() => {
     setSaved(isSaved(app.id));
-    setViewCount(getViews()[app.id] ?? 0);
   }, [app.id]);
 
   const goPlay = () => router.push(`/play/${app.id}`);

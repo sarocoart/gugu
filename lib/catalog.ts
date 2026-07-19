@@ -1,24 +1,150 @@
-// 코드에 내장된 작품(data.ts)과 사용자가 올린 작품(storage)을 하나로 합쳐서 다룹니다.
-// 화면들은 이 파일만 가져다 쓰면 양쪽 작품을 모두 볼 수 있습니다.
-import { apps as builtinApps, type GuguApp } from "./data";
-import { getMyApps } from "./storage";
+// 작품 창고 — 이제 서버(Supabase)에서 작품을 읽고 씁니다.
+// 그래서 어느 기기에서든, 누구에게든 같은 작품 목록이 보여요.
+// 화면들은 이 파일의 함수만 쓰면 되고, 저장 방식이 바뀌어도 화면은 그대로예요.
+import { supabase } from "./supabase";
+import type { GuguApp } from "./data";
+import { categories } from "./labels";
 
-// 전체 작품 = 내가 올린 것(위) + 기본 제공(아래)
-// 숨긴 작품(hidden)은 여기서 빠져서 홈·추천에 안 나옵니다.
-export function getAllApps(): GuguApp[] {
-  return [...getMyApps().filter((a) => !a.hidden), ...builtinApps];
+// 서버 한 줄(row)을 화면용 작품 모양으로 바꿔줍니다.
+function rowToApp(r: any): GuguApp {
+  return {
+    id: r.id,
+    title: r.title,
+    desc: r.desc ?? "",
+    category: r.category,
+    emoji: r.emoji ?? "✨",
+    image: r.image ?? undefined,
+    url: r.url ?? "",
+    maker: r.maker,
+    minutes: r.minutes ?? undefined,
+    createdAt: r.created_at ? new Date(r.created_at).getTime() : undefined,
+    hidden: r.hidden ?? false,
+    tags: r.tags ?? undefined,
+    contact: r.contact ?? undefined,
+    views: r.views ?? 0,
+  };
 }
 
-// id로 작품 하나 찾기 — 숨긴 작품도 찾습니다.
-// (내가 올린 것에서 GO!를 눌러 확인해볼 수 있어야 하니까요)
-export function findApp(id: string): GuguApp | undefined {
-  return [...getMyApps(), ...builtinApps].find((a) => a.id === id);
+// 화면용 작품을 서버 저장용 모양으로 바꿔줍니다.
+function appToRow(app: GuguApp) {
+  return {
+    id: app.id,
+    title: app.title,
+    desc: app.desc,
+    category: app.category,
+    emoji: app.emoji,
+    image: app.image ?? null,
+    url: app.url,
+    maker: app.maker,
+    minutes: app.minutes ?? null,
+    hidden: app.hidden ?? false,
+    tags: app.tags ?? null,
+    contact: app.contact ?? null,
+  };
+}
+
+// 공개된 전체 작품 (숨긴 것 제외, 최신순)
+export async function fetchAllApps(): Promise<GuguApp[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("gugu_apps")
+      .select("*")
+      .eq("hidden", false)
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    return data.map(rowToApp);
+  } catch {
+    return [];
+  }
+}
+
+// 작품 하나 (숨긴 것도 — 주인이 확인해볼 수 있게)
+export async function fetchApp(id: string): Promise<GuguApp | undefined> {
+  if (!supabase) return undefined;
+  try {
+    const { data, error } = await supabase.from("gugu_apps").select("*").eq("id", id).maybeSingle();
+    if (error || !data) return undefined;
+    return rowToApp(data);
+  } catch {
+    return undefined;
+  }
+}
+
+// 내가 올린 작품 전부 (숨긴 것 포함, 최신순)
+export async function fetchMyApps(ownerId: string): Promise<GuguApp[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("gugu_apps")
+      .select("*")
+      .eq("owner", ownerId)
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    return data.map(rowToApp);
+  } catch {
+    return [];
+  }
+}
+
+// 새 작품 올리기 (로그인 필요 — 서버 규칙)
+export async function insertApp(app: GuguApp): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from("gugu_apps").insert(appToRow(app));
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+// 작품 고치기 (내 작품만 — 서버 규칙)
+export async function updateApp(app: GuguApp): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from("gugu_apps").update(appToRow(app)).eq("id", app.id);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+// 숨기기/보이기
+export async function setAppHidden(id: string, hidden: boolean): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from("gugu_apps").update({ hidden }).eq("id", id);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+// 삭제
+export async function deleteApp(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from("gugu_apps").delete().eq("id", id);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+// 조회수 1 올리기 (누구나 가능 — 서버의 전용 함수 호출, 결과는 기다리지 않음)
+export function addServerView(id: string) {
+  if (!supabase) return;
+  try {
+    supabase.rpc("gugu_add_view", { app_id: id }).then(
+      () => {},
+      () => {}
+    );
+  } catch {
+    // 무시
+  }
 }
 
 // 검색 — 제목·소개·만든 사람·종류 이름·검색 단어를 모두 뒤집니다.
-// 여러 단어를 띄어 쓰면(예: "아기 게임") 단어마다 어디든 들어있으면 찾아져요.
-import { categories } from "./labels";
-
 export function matchesQuery(app: GuguApp, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (q === "") return true;

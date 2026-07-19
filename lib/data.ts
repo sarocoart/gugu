@@ -14,6 +14,7 @@ export type GuguApp = {
   minutes?: number;    // 소요 시간(분), 선택
   createdAt?: number;  // 올린 시각 — 7일 안이면 NEW 배지가 붙어요
   hidden?: boolean;    // true면 홈에서 숨겨져요 (내가 올린 것에서만 보임)
+  views?: number;      // 조회수 — 서버에서 함께 내려옵니다
   biltProductId?: string; // 빌트마켓 연동용 자리 (지금은 비움)
 };
 
