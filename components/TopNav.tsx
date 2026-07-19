@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { labels } from "@/lib/labels";
-import { links } from "@/lib/features";
+import { links, features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
 import { supabase, getCurrentUser, type GuguUser } from "@/lib/supabase";
 
 // 하단 바와 같은 메뉴를 씁니다 — 한 곳(navItems)에서 관리하려고 분리했어요.
 export const navItems = [
-  { href: "/", label: labels.home, icon: "🏠" },
-  { href: "/nest", label: labels.mypage, icon: "🕊️" },
+  { href: "/", label: labels.home },
+  { href: "/nest", label: labels.mypage },
 ];
 
 // PC에서만 보이는 상단 가로 바. 모바일에선 CSS(.gugu-topnav)가 숨깁니다.
@@ -84,7 +84,7 @@ export default function TopNav() {
             textDecoration: "none",
           }}
         >
-          👤 로그인
+          로그인
         </Link>
       )}
 
@@ -117,15 +117,16 @@ export default function TopNav() {
               href={item.href}
               style={{
                 fontSize: font.body,
-                fontWeight: active ? 600 : 400,
-                color: active ? colors.active : colors.textSub,
+                fontWeight: active ? 700 : 500,
+                color: colors.text,
                 textDecoration: "none",
               }}
             >
-              <span aria-hidden="true">{item.icon}</span> {item.label}
+              {item.label}
             </Link>
           );
         })}
+        {features.biltButtons && (
         <a
           href={links.bilt}
           target="_blank"
@@ -144,6 +145,7 @@ export default function TopNav() {
         >
           🛒 빌트마켓 GO!
         </a>
+        )}
       </div>
     </nav>
   );

@@ -9,7 +9,7 @@ import type { GuguApp } from "@/lib/data";
 import { getAllApps, matchesQuery } from "@/lib/catalog";
 import { getPlayed } from "@/lib/storage";
 import { categories, labels } from "@/lib/labels";
-import { links } from "@/lib/features";
+import { links, features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
 
 // 첫 화면 = 검색 + 카테고리 + 전체 작품. (구경 화면과 합쳤습니다)
@@ -98,7 +98,8 @@ function HomeContent() {
         </div>
       )}
 
-      {/* 빌트마켓으로 가는 다리 — 주소는 lib/features.ts의 links에서 관리 */}
+      {/* 빌트마켓으로 가는 다리 — features.biltButtons로 켜고 끕니다 */}
+      {features.biltButtons && (
       <section style={{ padding: "28px 0 8px" }}>
         <div
           style={{
@@ -135,6 +136,7 @@ function HomeContent() {
           </a>
         </div>
       </section>
+      )}
     </div>
   );
 }

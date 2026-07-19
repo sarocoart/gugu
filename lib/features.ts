@@ -5,6 +5,7 @@ export const features = {
   comments: false,   // 댓글 — 2단계
   badges: false,     // 배지 수집 — 3단계
   biltLink: false,   // 빌트마켓 구매 연결 — 나중에
+  biltButtons: false, // 빌트마켓 GO!·가기 버튼 표시 — true로 바꾸면 다시 보여요
 } as const;
 
 // 서로 오가는 주소 — 바뀌면 여기만 고치면 됩니다.

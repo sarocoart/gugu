@@ -185,7 +185,7 @@ export default function NestPage() {
                   cursor: "pointer",
                 }}
               >
-                🔑 로그인 · 빌트마켓 계정 사용 가능
+                로그인 · 빌트마켓 계정 사용 가능
               </button>
             )}
           </div>

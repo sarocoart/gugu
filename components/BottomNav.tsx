@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/theme";
-import { links } from "@/lib/features";
+import { links, features } from "@/lib/features";
 import { navItems } from "./TopNav";
 
 // 모바일에서만 보이는 하단 바. PC에선 CSS(.gugu-bottomnav)가 숨깁니다.
@@ -33,20 +33,18 @@ export default function BottomNav() {
             href={item.href}
             style={{
               flex: 1,
-              padding: "10px 0 12px",
+              padding: "16px 0 18px",
               textAlign: "center",
               textDecoration: "none",
-              color: active ? colors.active : colors.textSub,
+              color: colors.text,
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 22, display: "block" }}>
-              {item.icon}
-            </span>
-            <span style={{ fontSize: 12, fontWeight: active ? 600 : 400 }}>{item.label}</span>
+            <span style={{ fontSize: 15, fontWeight: active ? 700 : 500 }}>{item.label}</span>
           </Link>
         );
       })}
       {/* 홈·내 둥지 옆 — 빌트마켓 GO! (새 탭으로 열려요) */}
+      {features.biltButtons && (
       <a
         href={links.bilt}
         target="_blank"
@@ -64,6 +62,7 @@ export default function BottomNav() {
         </span>
         <span style={{ fontSize: 12, fontWeight: 600 }}>빌트마켓 GO!</span>
       </a>
+      )}
     </nav>
   );
 }
