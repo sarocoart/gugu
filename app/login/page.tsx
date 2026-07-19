@@ -82,8 +82,13 @@ export default function LoginPage() {
         setError("이미 가입된 이메일 같아요. 비밀번호를 다시 확인해 주세요.");
       } else if (data.session) {
         router.push("/nest"); // 메일 인증이 꺼져 있으면 바로 로그인됩니다.
+      } else if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        // 이미 가입된 이메일이면 서버가 (보안상 티 안 내고) 아무것도 안 보내는 대신
+        // identities가 빈 배열로 옵니다 — 이걸로 구분해서 정확히 안내해요.
+        setAskNickname(false);
+        setError("이 이메일은 이미 가입되어 있어요! 비밀번호가 맞지 않는 것 같아요. 아래 '비밀번호 찾기'로 새 비밀번호를 만들어 주세요.");
       } else {
-        setNotice("가입 완료! 메일함에 확인 메일이 왔다면 눌러서 인증한 뒤 다시 시작하기를 눌러 주세요.");
+        setNotice("가입 완료! 메일함(스팸함 포함)에서 확인 메일을 눌러 인증한 뒤, 다시 시작하기를 눌러 주세요.");
       }
     } catch {
       setError("잠시 문제가 생겼어요. 다시 시도해 주세요.");
