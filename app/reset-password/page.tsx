@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
@@ -17,6 +17,14 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [linkDead, setLinkDead] = useState(false); // 만료되거나 이미 쓴 링크로 들어온 경우
+
+  // 메일 링크가 만료되면 주소 뒤에 #error=...가 붙어서 옵니다. 그걸 감지해요.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash.includes("error")) {
+      setLinkDead(true);
+    }
+  }, []);
 
   if (!supabase) {
     return (
@@ -48,6 +56,24 @@ export default function ResetPasswordPage() {
     }
     setBusy(false);
   };
+
+  // 만료된 링크 안내 — 새 메일을 받도록 안내합니다.
+  if (linkDead) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px" }}>
+        <Pigeon size={90} mood="empty" />
+        <p style={{ fontSize: font.body, color: colors.text, margin: "14px 0 6px", fontWeight: 600 }}>
+          이 링크는 시간이 지나서 못 쓰게 됐구구.
+        </p>
+        <p style={{ fontSize: font.sub, color: colors.textSub, margin: "0 0 18px" }}>
+          링크는 1시간 안에, 한 번만 쓸 수 있어요.
+          <br />
+          새 메일을 받아서 다시 해봐요!
+        </p>
+        <RunButton label="재설정 메일 다시 받기" onClick={() => router.push("/forgot-password")} />
+      </div>
+    );
+  }
 
   if (done) {
     return (
