@@ -33,16 +33,8 @@ export type GuguApp = {
 // },
 // ============================================================
 export const apps: GuguApp[] = [
-  {
-    id: "mbti-test",
-    title: "MBTI 심리테스트",
-    desc: "3분 만에 알아보는 내 성격 유형",
-    category: "test",
-    emoji: "🔮",
-    url: "https://marketplace-lake-one.vercel.app",
-    maker: "구구",
-    minutes: 3,
-  },
+  // 기본 제공 작품은 이제 없습니다 — 모든 작품은 "새 작품 올리기"로 올려요.
+  // 코드로 직접 넣고 싶을 때는 위 주석의 예시를 복사해서 여기에 추가하면 됩니다.
 ];
 
 export function getApp(id: string): GuguApp | undefined {
