@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, runLabel } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved } from "@/lib/storage";
+import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
+import { addServerView } from "@/lib/catalog";
 
 // 큰 그림 카드 — 홈과 내 둥지(담은 것/해본 것)에서 함께 씁니다.
 // 제목은 가운데 정렬, 담기는 하트 색과 숫자로 표시합니다.
@@ -35,6 +36,19 @@ export default function AppCard({
   }, [app.id]);
 
   const goPlay = () => router.push(`/play/${app.id}`);
+
+  // GO! — 빨리 하고 싶은 사람용: 게임을 바로 새 창으로 엽니다.
+  // (조회수·"해본 것" 기록도 함께 남깁니다. 실행 주소가 없으면 소개 화면으로)
+  const goRun = () => {
+    if (app.url) {
+      markPlayed(app.id);
+      addServerView(app.id);
+      const opened = window.open(app.url, "_blank", "noopener");
+      if (!opened) goPlay(); // 브라우저가 새 창을 막으면 소개 화면으로라도 이동
+    } else {
+      goPlay();
+    }
+  };
 
   const onHeart = () => {
     const next = toggleSaved(app.id);
@@ -188,10 +202,10 @@ export default function AppCard({
         </div>
       </button>
 
-      {/* GO! + 하트(담긴 숫자) */}
+      {/* GO! + 하트(담긴 숫자) — GO!는 새 창에서 바로 실행, 나머지는 소개 화면으로 */}
       <div style={{ display: "flex", gap: 8, padding: "12px 14px 14px" }}>
         <button
-          onClick={goPlay}
+          onClick={goRun}
           style={{
             flex: 1,
             height: 48,
