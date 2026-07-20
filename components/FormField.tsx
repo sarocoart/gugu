@@ -12,6 +12,7 @@ export default function FormField({
   placeholder,
   type = "text",
   required = false,
+  multiline = false, // true면 여러 줄 입력칸(설명 등)이 됩니다
 }: {
   label: string;
   value: string;
@@ -19,6 +20,7 @@ export default function FormField({
   placeholder: string;
   type?: string;
   required?: boolean;
+  multiline?: boolean;
 }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -33,23 +35,45 @@ export default function FormField({
       >
         {label} {required && <span style={{ color: colors.orange }}>*</span>}
       </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          height: 48,
-          borderRadius: 14,
-          border: `1px solid ${colors.line}`,
-          background: colors.surface,
-          padding: "0 16px",
-          fontSize: font.body,
-          color: colors.text,
-          outline: "none",
-        }}
-      />
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={4}
+          style={{
+            width: "100%",
+            borderRadius: 14,
+            border: `1px solid ${colors.line}`,
+            background: colors.surface,
+            padding: "12px 16px",
+            fontSize: font.body,
+            color: colors.text,
+            outline: "none",
+            lineHeight: 1.6,
+            resize: "vertical",
+            fontFamily: "inherit",
+          }}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            height: 48,
+            borderRadius: 14,
+            border: `1px solid ${colors.line}`,
+            background: colors.surface,
+            padding: "0 16px",
+            fontSize: font.body,
+            color: colors.text,
+            outline: "none",
+          }}
+        />
+      )}
     </div>
   );
 }

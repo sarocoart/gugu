@@ -213,6 +213,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
                 fontWeight: 600,
                 color: colors.text,
                 lineHeight: 1.7,
+                whiteSpace: "pre-line", // 소개 글의 줄바꿈을 그대로 보여줍니다
               }}
             >
               {app.desc}

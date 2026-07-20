@@ -51,3 +51,46 @@ export function runLabel(categoryId: string): string {
   // const cat = categories.find((c) => c.id === categoryId);
   // return cat ? `${cat.name} ${labels.run}` : labels.run;
 }
+
+// 추천 검색 단어 재료 — 올리기 화면에서 씁니다. 단어를 늘리고 싶으면 여기만 고치세요.
+// 1) 종류별 기본 단어
+export const categoryTags: Record<CategoryId, string[]> = {
+  game: ["게임", "놀이", "재미"],
+  test: ["테스트", "심리", "궁합"],
+  tool: ["도구", "생활", "편리"],
+  make: ["만들기", "그림", "창작"],
+  study: ["공부", "학습", "퀴즈"],
+  fun: ["재미", "웃음", "심심풀이"],
+};
+
+// 2) 제목·소개에 이 단어가 들어 있으면 → 이 태그들을 추천
+export const keywordTags: Array<{ find: string; tags: string[] }> = [
+  { find: "아기", tags: ["아기", "아이"] },
+  { find: "아이", tags: ["아이"] },
+  { find: "어린이", tags: ["아이"] },
+  { find: "눈", tags: ["눈운동"] },
+  { find: "운동", tags: ["운동", "건강"] },
+  { find: "스트레칭", tags: ["운동", "건강"] },
+  { find: "건강", tags: ["건강"] },
+  { find: "그림", tags: ["그림"] },
+  { find: "색칠", tags: ["그림", "색칠"] },
+  { find: "퍼즐", tags: ["퍼즐"] },
+  { find: "기억", tags: ["기억력"] },
+  { find: "숫자", tags: ["숫자"] },
+  { find: "계산", tags: ["계산"] },
+  { find: "한글", tags: ["한글"] },
+  { find: "영어", tags: ["영어"] },
+  { find: "음악", tags: ["음악"] },
+  { find: "동물", tags: ["동물"] },
+  { find: "강아지", tags: ["동물", "강아지"] },
+  { find: "고양이", tags: ["동물", "고양이"] },
+  { find: "우주", tags: ["우주"] },
+  { find: "별", tags: ["우주"] },
+  { find: "과일", tags: ["과일"] },
+  { find: "요리", tags: ["요리"] },
+  { find: "여행", tags: ["여행"] },
+  { find: "달리", tags: ["달리기"] },
+  { find: "타자", tags: ["타자연습"] },
+  { find: "시계", tags: ["시계"] },
+  { find: "날씨", tags: ["날씨"] },
+];

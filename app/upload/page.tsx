@@ -1,13 +1,13 @@
 "use client";
 
-import { Suspense, useState, useEffect, type ChangeEvent } from "react";
+import { Suspense, useState, useEffect, useMemo, type ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pigeon from "@/components/Pigeon";
 import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
-import { categories, labels, type CategoryId } from "@/lib/labels";
+import { categories, labels, categoryTags, keywordTags, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { fetchApp, insertApp, updateApp } from "@/lib/catalog";
+import { fetchApp, fetchMyApps, insertApp, updateApp } from "@/lib/catalog";
 import { getCurrentUser, type GuguUser } from "@/lib/supabase";
 import Field from "@/components/FormField";
 
@@ -52,6 +52,7 @@ function UploadContent() {
   const [error, setError] = useState("");
   const [user, setUser] = useState<GuguUser | null>(null);
   const [checked, setChecked] = useState(false); // 로그인 확인이 끝났는지
+  const [myOldTags, setMyOldTags] = useState<string[]>([]); // 내가 전에 쓴 검색 단어들
 
   // 로그인 상태 확인 — 작품은 계정에 붙어 저장되므로 로그인이 필요해요.
   useEffect(() => {
@@ -60,6 +61,25 @@ function UploadContent() {
       setChecked(true);
     });
   }, []);
+
+  // 내가 전에 올린 작품들의 검색 단어를 모아둡니다 (많이 쓴 순서).
+  // "비슷한 작품을 또 올릴 때" 한 번의 클릭으로 같은 단어를 붙일 수 있어요.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    fetchMyApps(user.id).then((list) => {
+      if (!alive) return;
+      const count = new Map<string, number>();
+      list.forEach((a) => (a.tags ?? []).forEach((t) => count.set(t, (count.get(t) ?? 0) + 1)));
+      const sorted = Array.from(count.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([t]) => t);
+      setMyOldTags(sorted);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
   // 수정 모드면 서버에서 기존 내용을 불러와 칸에 채워 넣습니다.
   useEffect(() => {
@@ -90,6 +110,42 @@ function UploadContent() {
     } catch {
       setError("그림을 불러오지 못했어요. 다른 그림으로 해보세요.");
     }
+  };
+
+  // 추천 검색 단어 — ① 내가 전에 쓴 단어 ② 제목·소개 속 단어 ③ 종류 기본 단어 순서로,
+  // 이미 적어 넣은 단어는 빼고 최대 8개까지 보여줍니다. (그림을 보고 추천하려면
+  // AI 호출이 필요해서 여기서는 글자 기반으로만 추천해요)
+  const currentTags = useMemo(
+    () =>
+      tagsText
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t !== ""),
+    [tagsText]
+  );
+
+  const suggestions = useMemo(() => {
+    const text = `${title} ${desc}`;
+    const pool: string[] = [];
+    myOldTags.forEach((t) => pool.push(t));
+    keywordTags.forEach((k) => {
+      if (text.includes(k.find)) k.tags.forEach((t) => pool.push(t));
+    });
+    (categoryTags[category] ?? []).forEach((t) => pool.push(t));
+    const seen = new Set<string>();
+    const out: string[] = [];
+    pool.forEach((t) => {
+      if (!seen.has(t) && !currentTags.includes(t)) {
+        seen.add(t);
+        out.push(t);
+      }
+    });
+    return out.slice(0, 8);
+  }, [title, desc, category, myOldTags, currentTags]);
+
+  // 추천 단어를 누르면 검색 단어 칸 뒤에 붙습니다.
+  const addTag = (t: string) => {
+    setTagsText(currentTags.concat(t).join(", "));
   };
 
   const submit = async () => {
@@ -193,7 +249,13 @@ function UploadContent() {
       </div>
 
       <Field label="작품 이름" value={title} onChange={setTitle} placeholder="예: 무지개 그림판" required />
-      <Field label="한 줄 소개" value={desc} onChange={setDesc} placeholder="예: 손가락으로 그림을 그려요" />
+      <Field
+        label="작품 소개"
+        value={desc}
+        onChange={setDesc}
+        placeholder="작품을 소개해 주세요. 여러 줄로 길게 적어도 좋아요."
+        multiline
+      />
 
       <div style={{ marginBottom: 16 }}>
         <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
@@ -297,6 +359,35 @@ function UploadContent() {
         onChange={setTagsText}
         placeholder="쉼표로 구분해요. 예: 운동, 건강, 스트레칭"
       />
+      {suggestions.length > 0 && (
+        <div style={{ margin: "-6px 0 16px" }}>
+          <p style={{ margin: "0 2px 6px", fontSize: font.sub, color: colors.textSub }}>
+            추천 단어 — 누르면 위 칸에 추가돼요
+          </p>
+          <div className="gugu-chips">
+            {suggestions.map((t) => (
+              <button
+                key={t}
+                onClick={() => addTag(t)}
+                style={{
+                  height: 40,
+                  padding: "0 14px",
+                  borderRadius: 20,
+                  border: "none",
+                  background: colors.mint,
+                  color: colors.mintText,
+                  fontSize: font.sub,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                + {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <Field
         label="제작 의뢰 받을 주소 (선택)"
         value={contact}
