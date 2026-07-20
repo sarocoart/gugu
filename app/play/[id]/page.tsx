@@ -12,9 +12,9 @@ import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
 import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
 
-// 실행 화면 — 게임은 항상 "새 창"에서 열립니다.
-// 페이지 안에 게임을 끼워 넣던 방식(iframe)을 없애서 스크롤이 하나만 남고,
-// 소개·메이커·추천이 한 번의 스크롤로 다 보입니다.
+// 실행 화면 — 게임이 "미리보기"로 바로 보이고, 실제 플레이는 항상 새 창에서.
+// 미리보기는 눈으로만 보는 창(클릭하면 새 창이 열림)이라
+// 게임 안쪽 스크롤이 생기지 않아 페이지 스크롤이 하나뿐입니다.
 export default function PlayPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [app, setApp] = useState<GuguApp | undefined>(undefined);
@@ -98,127 +98,120 @@ export default function PlayPage({ params }: { params: { id: string } }) {
 
   return (
     <div>
-      {/* 상단 바 — 뒤로 / 제목·메이커 / 담기 / 공유 */}
-      <div style={{ background: colors.mocha, padding: "12px 16px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* 상단 바 — 뒤로 / 제목 / 메이커 홈 / 담기 / 공유 (좁은 화면에선 자연스럽게 줄바꿈) */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+          padding: "12px 16px",
+          background: colors.mocha,
+        }}
+      >
+        <button
+          onClick={() => router.back()}
+          aria-label="뒤로 가기"
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            border: "none",
+            background: colors.surface,
+            fontSize: 20,
+            cursor: "pointer",
+            color: colors.text,
+            flexShrink: 0,
+          }}
+        >
+          ←
+        </button>
+        <p
+          style={{
+            flex: 1,
+            minWidth: 120,
+            margin: 0,
+            fontSize: font.cardTitle,
+            fontWeight: 600,
+            color: colors.text,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {app.title}
+        </p>
+        {/* 메이커 홈 버튼 — 민트색으로 확실히 "버튼"처럼. 작품 전체·제작 의뢰가 여기 있어요 */}
+        <button
+          onClick={goMaker}
+          style={{
+            height: 44,
+            padding: "0 18px",
+            borderRadius: 22,
+            border: "none",
+            background: colors.mint,
+            color: colors.mintText,
+            fontSize: font.body,
+            fontWeight: 700,
+            cursor: "pointer",
+            flexShrink: 0,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+          }}
+        >
+          🕊️ {app.maker}님 홈
+        </button>
+        {features.saving && (
           <button
-            onClick={() => router.back()}
-            aria-label="뒤로 가기"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              border: "none",
-              background: colors.surface,
-              fontSize: 20,
-              cursor: "pointer",
-              color: colors.text,
-              flexShrink: 0,
-            }}
-          >
-            ←
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p
-              style={{
-                margin: 0,
-                fontSize: font.cardTitle,
-                fontWeight: 600,
-                color: colors.text,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {app.title}
-            </p>
-            <p style={{ margin: 0, fontSize: font.sub, color: colors.textSub }}>{app.maker}</p>
-          </div>
-          {features.saving && (
-            <button
-              onClick={() => setSaved(toggleSaved(app.id))}
-              aria-label={saved ? labels.unsave : labels.save}
-              style={{
-                height: 44,
-                padding: "0 16px",
-                borderRadius: 22,
-                border: "none",
-                background: saved ? colors.orangeSoft : colors.surface,
-                color: saved ? colors.orangeText : colors.text,
-                fontSize: font.body,
-                fontWeight: 600,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              {saved ? "💛 1" : "🤍 0"}
-            </button>
-          )}
-          <button
-            onClick={share}
-            aria-label="공유하기"
+            onClick={() => setSaved(toggleSaved(app.id))}
+            aria-label={saved ? labels.unsave : labels.save}
             style={{
               height: 44,
               padding: "0 16px",
               borderRadius: 22,
               border: "none",
-              background: colors.surface,
-              color: colors.text,
+              background: saved ? colors.orangeSoft : colors.surface,
+              color: saved ? colors.orangeText : colors.text,
               fontSize: font.body,
               fontWeight: 600,
               cursor: "pointer",
               flexShrink: 0,
             }}
           >
-            {copied ? "복사됨 ✓" : "📤 공유"}
+            {saved ? "💛 1" : "🤍 0"}
           </button>
-        </div>
-
-        {/* 메이커로 가는 큰 버튼 — 작품 더 보기·제작 의뢰가 모두 메이커 페이지에 있어요 */}
+        )}
         <button
-          onClick={goMaker}
+          onClick={share}
+          aria-label="공유하기"
           style={{
-            marginTop: 10,
-            width: "100%",
-            height: 46,
-            borderRadius: 23,
-            border: `1px solid ${colors.line}`,
+            height: 44,
+            padding: "0 16px",
+            borderRadius: 22,
+            border: "none",
             background: colors.surface,
-            color: colors.mintText,
+            color: colors.text,
             fontSize: font.body,
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: "pointer",
+            flexShrink: 0,
           }}
         >
-          🕊️ {app.maker}님 작품 더 보기 · 제작 의뢰
+          {copied ? "복사됨 ✓" : "📤 공유"}
         </button>
       </div>
 
       {app.url ? (
-        <section style={{ padding: "28px 16px 8px", textAlign: "center" }}>
-          {/* 작품 얼굴 — 그림이 있으면 그림, 없으면 이모지 */}
-          {app.image ? (
-            <img
-              src={app.image}
-              alt=""
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: 24,
-                objectFit: "cover",
-                border: `1px solid ${colors.line}`,
-                background: colors.surface,
-              }}
-            />
-          ) : (
-            <div style={{ fontSize: 72, lineHeight: 1 }}>{app.emoji}</div>
-          )}
+        <section style={{ padding: "20px 16px 8px", textAlign: "center" }}>
+          {/* 실행 — 항상 새 창에서 크게 */}
+          <div style={{ maxWidth: 420, margin: "0 auto" }}>
+            <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={openNewTab} />
+          </div>
 
           {/* 한 줄 소개 — 가운데 정렬, 잘 보이게 */}
           {app.desc && (
             <p
               style={{
-                margin: "18px auto 0",
+                margin: "16px auto 0",
                 maxWidth: 560,
                 fontSize: 18,
                 fontWeight: 600,
@@ -230,16 +223,70 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             </p>
           )}
 
-          {/* 실행 — 항상 새 창에서 크게 */}
-          <div style={{ maxWidth: 420, margin: "22px auto 0" }}>
-            <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={openNewTab} />
+          {/* 게임 미리보기 — 눈으로만 보는 창. 누르면 새 창에서 열려요.
+              (미리보기 안에서는 스크롤·클릭이 안 되게 해서 페이지 스크롤이 하나만 남습니다) */}
+          <div
+            style={{
+              position: "relative",
+              maxWidth: 720,
+              margin: "18px auto 0",
+              borderRadius: 20,
+              overflow: "hidden",
+              border: `1px solid ${colors.line}`,
+              background: colors.surface,
+            }}
+          >
+            <iframe
+              src={app.url}
+              title={`${app.title} 미리보기`}
+              tabIndex={-1}
+              style={{
+                display: "block",
+                width: "100%",
+                height: 480,
+                border: "none",
+                pointerEvents: "none", // 미리보기 전용 — 안쪽 스크롤 방지
+                background: colors.surface,
+              }}
+            />
+            {/* 미리보기 전체를 덮는 투명 버튼 — 어디를 눌러도 새 창으로 */}
+            <button
+              onClick={openNewTab}
+              aria-label={`${app.title} 새 창에서 하기`}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            />
+            {/* 안내 배지 */}
+            <span
+              style={{
+                position: "absolute",
+                left: "50%",
+                bottom: 12,
+                transform: "translateX(-50%)",
+                background: "rgba(69,59,50,0.82)",
+                color: "#FFFFFF",
+                fontSize: font.sub,
+                fontWeight: 600,
+                padding: "8px 14px",
+                borderRadius: 18,
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              👀 미리보기예요 — 누르면 새 창에서 열려요
+            </span>
           </div>
-          <p style={{ margin: "10px 0 0", fontSize: font.sub, color: colors.textSub }}>
-            버튼을 누르면 게임이 새 창에서 크게 열려요.
-          </p>
 
           {/* 통계 */}
-          <p style={{ margin: "16px 0 0", fontSize: font.sub, color: colors.textSub, fontWeight: 600 }}>
+          <p style={{ margin: "14px 0 0", fontSize: font.sub, color: colors.textSub, fontWeight: 600 }}>
             조회 {viewCount} · {saved ? "💛" : "🤍"} 담김 {saved ? 1 : 0}
           </p>
         </section>
