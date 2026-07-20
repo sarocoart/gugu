@@ -10,9 +10,9 @@ import { fetchApp, fetchAllApps, addServerView } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
-import { isSaved, toggleSaved, markPlayed } from "@/lib/storage";
+import { isSaved, toggleSaved } from "@/lib/storage";
 
-// 실행 화면 — 게임이 "미리보기"로 바로 보이고, 실제 플레이는 항상 새 창에서.
+// 실행 화면 — 게임이 "미리보기"로 바로 보이고, 실제 플레이는 전체 화면 게임방에서.
 // 미리보기는 눈으로만 보는 창(클릭하면 새 창이 열림)이라
 // 게임 안쪽 스크롤이 생기지 않아 페이지 스크롤이 하나뿐입니다.
 export default function PlayPage({ params }: { params: { id: string } }) {
@@ -64,13 +64,9 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // 새 창에서 실행 — 이때 "해본 것"으로 기록됩니다.
-  const openNewTab = () => {
-    if (app.url) {
-      markPlayed(app.id);
-      window.open(app.url, "_blank", "noopener");
-    }
-  };
+  // 전체 화면 게임방으로 — 같은 창이라 뒤로 가기로 언제든 돌아옵니다.
+  // ("해본 것" 기록은 게임방에서 한 번만 남습니다)
+  const goRun = () => router.push(`/run/${app.id}`);
 
   const goMaker = () => router.push(`/maker/${encodeURIComponent(app.maker)}`);
 
@@ -204,7 +200,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         <section style={{ padding: "20px 16px 8px", textAlign: "center" }}>
           {/* 실행 — 항상 새 창에서 크게 */}
           <div style={{ maxWidth: 420, margin: "0 auto" }}>
-            <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={openNewTab} />
+            <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={goRun} />
           </div>
 
           {/* 한 줄 소개 — 가운데 정렬, 잘 보이게 */}
@@ -251,8 +247,8 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             />
             {/* 미리보기 전체를 덮는 투명 버튼 — 어디를 눌러도 새 창으로 */}
             <button
-              onClick={openNewTab}
-              aria-label={`${app.title} 새 창에서 하기`}
+              onClick={goRun}
+              aria-label={`${app.title} 크게 하기`}
               style={{
                 position: "absolute",
                 inset: 0,
@@ -281,7 +277,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
                 pointerEvents: "none",
               }}
             >
-              👀 미리보기예요 — 누르면 새 창에서 열려요
+              👀 미리보기예요 — 누르면 크게 열려요
             </span>
           </div>
 

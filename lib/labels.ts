@@ -9,7 +9,7 @@ export const labels = {
   played: "해본 것",
   follow: "단골",
   run: "GO!",
-  runNewTab: "새 창에서 게임 하기",
+  runNewTab: "게임 크게 하기",
   save: "담기",
   savedDone: "담았어요",
   unsave: "담기 취소",
