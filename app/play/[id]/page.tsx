@@ -25,6 +25,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
+    window.scrollTo(0, 0); // 게임방에서 돌아와도 항상 맨 위(메이커 홈 버튼)부터 보이게
     let alive = true;
     (async () => {
       const found = await fetchApp(params.id);
@@ -202,6 +203,9 @@ export default function PlayPage({ params }: { params: { id: string } }) {
           <div style={{ maxWidth: 420, margin: "0 auto" }}>
             <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={goRun} />
           </div>
+          <p style={{ margin: "10px 0 0", fontSize: font.sub, color: colors.textSub }}>
+            👀 아래로 내리면 <b>미리보기</b>와 <b>추천 작품</b>이 이어져요 ⬇
+          </p>
 
           {/* 한 줄 소개 — 가운데 정렬, 잘 보이게 */}
           {app.desc && (
@@ -234,8 +238,8 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               background: colors.surface,
             }}
           >
-            {/* 미리보기 창을 살짝 크게 만들어 가장자리를 잘라내면
-                안쪽 스크롤 막대가 화면 밖으로 밀려나 안 보입니다 */}
+            {/* 미리보기 속 화면을 아주 길게(1600) 만들어 두면 게임 내용이 전부 들어가서
+                스크롤 막대 자체가 생기지 않습니다. 겉 상자(480)가 위쪽만 보여줘요. */}
             <iframe
               src={app.url}
               title={`${app.title} 미리보기`}
@@ -243,8 +247,8 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               scrolling="no"
               style={{
                 display: "block",
-                width: "calc(100% + 24px)",
-                height: 504,
+                width: "100%",
+                height: 1600,
                 border: "none",
                 pointerEvents: "none", // 미리보기 전용 — 안쪽 스크롤 방지
                 background: colors.surface,
