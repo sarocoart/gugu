@@ -7,9 +7,10 @@ import RunButton from "@/components/RunButton";
 import type { GuguApp } from "@/lib/data";
 import { categories, labels, categoryTags, keywordTags, type CategoryId } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
-import { fetchApp, fetchMyApps, insertApp, updateApp } from "@/lib/catalog";
+import { fetchApp, fetchMyApps, insertApp, updateApp, fetchMyPhone, saveMyPhone } from "@/lib/catalog";
 import { getCurrentUser, type GuguUser } from "@/lib/supabase";
 import Field from "@/components/FormField";
+import { contactKind, type ContactKind } from "@/lib/contact";
 
 // 고른 그림 파일을 카드에 알맞은 크기로 줄여서 돌려줍니다.
 // (큰 사진을 그대로 저장하면 브라우저 저장 공간이 금방 차서, 자동으로 줄여요)
@@ -48,11 +49,13 @@ function UploadContent() {
   const [url, setUrl] = useState("");
   const [maker, setMaker] = useState("");
   const [tagsText, setTagsText] = useState(""); // 검색 단어 (쉼표로 구분)
-  const [contact, setContact] = useState(""); // 연락 받을 주소 (오픈채팅/이메일)
+  const [contact, setContact] = useState(""); // 연락 받을 주소 (오픈채팅/이메일/카톡 ID)
+  const [contactMethod, setContactMethod] = useState<Exclude<ContactKind, "none">>("link");
   const [error, setError] = useState("");
   const [user, setUser] = useState<GuguUser | null>(null);
   const [checked, setChecked] = useState(false); // 로그인 확인이 끝났는지
   const [myOldTags, setMyOldTags] = useState<string[]>([]); // 내가 전에 쓴 검색 단어들
+  const [phone, setPhone] = useState(""); // 전화번호 (금고 저장 — 관리자만 봄)
 
   // 로그인 상태 확인 — 작품은 계정에 붙어 저장되므로 로그인이 필요해요.
   useEffect(() => {
@@ -67,6 +70,10 @@ function UploadContent() {
   useEffect(() => {
     if (!user) return;
     let alive = true;
+    // 금고에 넣어둔 내 전화번호가 있으면 불러와 칸에 채웁니다 (관리자만 보는 값).
+    fetchMyPhone().then((p) => {
+      if (alive && p) setPhone(p);
+    });
     fetchMyApps(user.id).then((list) => {
       if (!alive) return;
       const count = new Map<string, number>();
@@ -95,6 +102,8 @@ function UploadContent() {
         setMaker(found.maker);
         setTagsText((found.tags ?? []).join(", "));
         setContact(found.contact ?? "");
+        const k = contactKind(found.contact);
+        if (k !== "none") setContactMethod(k); // 저장된 주소의 종류를 알아채서 표시
       }
     })();
   }, [editId]);
@@ -154,6 +163,20 @@ function UploadContent() {
     if (url.trim() !== "" && !/^https?:\/\//.test(url.trim())) {
       return setError("주소는 https:// 로 시작해야 해요.");
     }
+    const c = contact.trim();
+    if (c !== "" && contactMethod === "link" && !/^https?:\/\//.test(c)) {
+      return setError("채팅 링크는 https:// 로 시작해야 해요. 오픈채팅 방의 '링크 복사'를 붙여넣어 주세요.");
+    }
+    if (c !== "" && contactMethod === "email" && !c.includes("@")) {
+      return setError("이메일 주소를 확인해 주세요. @가 들어가야 해요.");
+    }
+    const ph = phone.trim();
+    if (ph === "") return setError("전화번호를 적어 주세요. 관리자만 볼 수 있어요.");
+    if (!/^[0-9+\-() ]{8,20}$/.test(ph)) {
+      return setError("전화번호를 확인해 주세요. 숫자와 - 만 적으면 돼요. 예: 010-1234-5678");
+    }
+    // 전화번호는 공개 작품과 따로, 금고 테이블에 저장합니다 (비우면 금고에서 삭제).
+    await saveMyPhone(ph);
 
     // 아이콘은 고른 종류에 맞춰 자동으로 정해집니다.
     const catIcon = categories.find((c) => c.id === category)?.icon ?? "✨";
@@ -388,13 +411,74 @@ function UploadContent() {
           </div>
         </div>
       )}
-      <Field
-        label="제작 의뢰 받을 주소 (선택)"
-        value={contact}
-        onChange={setContact}
-        placeholder="카카오 오픈채팅 링크 또는 이메일"
-      />
+<div style={{ marginBottom: 16 }}>
+        <label style={{ display: "block", fontSize: font.body, fontWeight: 600, color: colors.text, marginBottom: 6 }}>
+          제작 의뢰 받을 방법 (선택)
+        </label>
+        {/* 방법 고르기 — 고른 방법에 맞춰 아래 칸의 안내가 바뀝니다 */}
+        <div className="gugu-chips" style={{ marginBottom: 8 }}>
+          {(
+            [
+              { id: "link", name: "💬 카톡 오픈채팅" },
+              { id: "email", name: "✉️ 이메일" },
+              { id: "kakaoId", name: "🆔 카톡 ID" },
+            ] as Array<{ id: Exclude<ContactKind, "none">; name: string }>
+          ).map((mth) => {
+            const active = contactMethod === mth.id;
+            return (
+              <button
+                key={mth.id}
+                onClick={() => setContactMethod(mth.id)}
+                style={{
+                  height: 44,
+                  padding: "0 16px",
+                  borderRadius: 22,
+                  border: active ? "none" : `1px solid ${colors.line}`,
+                  background: active ? colors.orangeSoft : colors.surface,
+                  color: active ? colors.orangeText : colors.text,
+                  fontSize: font.body,
+                  fontWeight: active ? 600 : 400,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {mth.name}
+              </button>
+            );
+          })}
+        </div>
+        <Field
+          label=""
+          value={contact}
+          onChange={setContact}
+          placeholder={
+            contactMethod === "link"
+              ? "https://open.kakao.com/o/... (오픈채팅 방의 링크 복사)"
+              : contactMethod === "email"
+                ? "예: gugu@example.com"
+                : "예: sarocoart (카카오톡 ID)"
+          }
+        />
+        <p style={{ margin: "-6px 2px 0", fontSize: font.sub, color: colors.textSub }}>
+          {contactMethod === "link"
+            ? "방문자가 버튼 하나로 바로 채팅에 들어와요. QR코드도 자동으로 만들어져요."
+            : contactMethod === "email"
+              ? "방문자가 누르면 메일 쓰기 창이 바로 열려요."
+              : "방문자에게 ID와 친구 추가 방법을 보여줘요. 카카오톡 설정에서 'ID 검색 허용'을 켜 두세요."}
+        </p>
+      </div>
 
+      <Field
+        label="전화번호 (관리자용)"
+        value={phone}
+        onChange={setPhone}
+        placeholder="예: 010-1234-5678"
+        type="tel"
+        required
+      />
+      <p style={{ margin: "-8px 2px 16px", fontSize: font.sub, color: colors.textSub }}>
+        방문자에게는 절대 보이지 않아요. 운영자가 연락이 꼭 필요할 때만 써요.
+      </p>
       {error && (
         <p style={{ color: colors.orange, fontSize: font.sub, margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
       )}

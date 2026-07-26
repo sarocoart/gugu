@@ -174,3 +174,47 @@ export async function migrateLocalWorks(): Promise<boolean> {
     return false;
   }
 }
+
+// ---------- 전화번호 금고 (관리자만 보는 연락처) ----------
+// 전화번호는 작품 테이블(공개)이 아니라 gugu_maker_phone 금고 테이블에 넣습니다.
+// 안전 규칙(RLS) 덕분에 본인과 관리자 말고는 아무도 못 읽어요.
+
+// 내 전화번호 가져오기 (없으면 빈 문자열)
+export async function fetchMyPhone(): Promise<string> {
+  if (!supabase) return "";
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData?.user?.id;
+    if (!uid) return "";
+    const { data, error } = await supabase
+      .from("gugu_maker_phone")
+      .select("phone")
+      .eq("owner", uid)
+      .maybeSingle();
+    if (error || !data) return "";
+    return data.phone ?? "";
+  } catch {
+    return "";
+  }
+}
+
+// 내 전화번호 저장하기 — 빈 문자열이면 금고에서 지웁니다.
+export async function saveMyPhone(phone: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData?.user?.id;
+    if (!uid) return false;
+    const p = phone.trim();
+    if (p === "") {
+      const { error } = await supabase.from("gugu_maker_phone").delete().eq("owner", uid);
+      return !error;
+    }
+    const { error } = await supabase
+      .from("gugu_maker_phone")
+      .upsert({ owner: uid, phone: p, updated_at: new Date().toISOString() });
+    return !error;
+  } catch {
+    return false;
+  }
+}

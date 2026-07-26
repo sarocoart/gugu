@@ -24,17 +24,19 @@ export default function FormField({
 }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: font.body,
-          fontWeight: 600,
-          color: colors.text,
-          marginBottom: 6,
-        }}
-      >
-        {label} {required && <span style={{ color: colors.orange }}>*</span>}
-      </label>
+      {label !== "" && (
+        <label
+          style={{
+            display: "block",
+            fontSize: font.body,
+            fontWeight: 600,
+            color: colors.text,
+            marginBottom: 6,
+          }}
+        >
+          {label} {required && <span style={{ color: colors.orange }}>*</span>}
+        </label>
+      )}
       {multiline ? (
         <textarea
           value={value}

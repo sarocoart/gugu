@@ -8,6 +8,7 @@ import type { GuguApp } from "@/lib/data";
 import { fetchAllApps } from "@/lib/catalog";
 import { getSaved } from "@/lib/storage";
 import { colors, font } from "@/lib/theme";
+import { contactKind, qrImageUrl } from "@/lib/contact";
 
 // 메이커 페이지 — 만든 사람의 프로필과 작품 전부를 보여줍니다.
 // 채팅 버튼: 메이커가 연락 주소(오픈채팅/이메일)를 남겼으면 그리로 연결됩니다.
@@ -21,6 +22,8 @@ export default function MakerPage({ params }: { params: { name: string } }) {
   const [contact, setContact] = useState("");
   const [copied, setCopied] = useState(false);
   const [noContactMsg, setNoContactMsg] = useState(false);
+  const [showContact, setShowContact] = useState(false); // 연락 방법 상자 열림/닫힘
+  const [copiedContact, setCopiedContact] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -41,15 +44,27 @@ export default function MakerPage({ params }: { params: { name: string } }) {
     };
   }, [makerName]);
 
-  // 채팅/제작 의뢰 — 이메일이면 메일 앱, 링크면 새 창으로.
+  // 채팅/제작 의뢰 — 버튼을 누르면 연락 방법 상자가 열립니다.
+  // (링크는 바로 연결 버튼+QR, 이메일은 메일 버튼, 카톡 ID는 복사+안내)
+  const kind = contactKind(contact);
   const openChat = () => {
-    if (!contact) {
+    if (kind === "none") {
       setNoContactMsg(true);
       window.setTimeout(() => setNoContactMsg(false), 2500);
       return;
     }
-    const target = contact.includes("@") && !contact.startsWith("http") ? `mailto:${contact}` : contact;
-    window.open(target, "_blank", "noopener");
+    setShowContact((v) => !v);
+  };
+
+  // 연락처 글자를 복사합니다 (안 되는 환경이면 조용히 넘어가요).
+  const copyContact = async () => {
+    try {
+      await navigator.clipboard.writeText(contact);
+      setCopiedContact(true);
+      window.setTimeout(() => setCopiedContact(false), 2000);
+    } catch {
+      // 무시
+    }
   };
 
   // 메이커 페이지 공유 — 휴대폰은 공유창, PC는 링크 복사.
@@ -128,6 +143,147 @@ export default function MakerPage({ params }: { params: { name: string } }) {
           <p style={{ margin: "10px 0 0", fontSize: font.sub, color: colors.orangeText, fontWeight: 600 }}>
             아직 연락 주소를 안 남겼구구. 곧 채팅이 열릴 거예요!
           </p>
+        )}
+
+        {/* 연락 방법 상자 — 방법에 따라 바로 연결·QR·복사를 보여줍니다 */}
+        {showContact && kind !== "none" && (
+          <div
+            style={{
+              maxWidth: 380,
+              margin: "14px auto 0",
+              padding: "18px 16px",
+              borderRadius: 20,
+              background: colors.surface,
+              border: `1px solid ${colors.line}`,
+              textAlign: "center",
+            }}
+          >
+            {kind === "link" && (
+              <div>
+                <button
+                  onClick={() => window.open(contact, "_blank", "noopener")}
+                  style={{
+                    width: "100%",
+                    height: 50,
+                    borderRadius: 25,
+                    border: "none",
+                    background: colors.orange,
+                    color: "#FFFFFF",
+                    fontSize: font.body,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  💬 채팅으로 바로 연결
+                </button>
+                {/* QR — PC로 보는 사람이 휴대폰 카메라로 찍으면 바로 채팅이 열려요 */}
+                <img
+                  src={qrImageUrl(contact)}
+                  alt="채팅 연결 QR코드"
+                  width={180}
+                  height={180}
+                  loading="lazy"
+                  style={{
+                    display: "block",
+                    margin: "14px auto 0",
+                    borderRadius: 12,
+                    border: `1px solid ${colors.line}`,
+                    background: "#FFFFFF",
+                  }}
+                />
+                <p style={{ margin: "8px 0 0", fontSize: font.sub, color: colors.textSub }}>
+                  PC로 보고 있다면 휴대폰 카메라로 QR을 찍어 보세요 — 바로 연결돼요.
+                </p>
+                <button
+                  onClick={copyContact}
+                  style={{
+                    marginTop: 10,
+                    height: 40,
+                    padding: "0 16px",
+                    borderRadius: 20,
+                    border: `1px solid ${colors.line}`,
+                    background: colors.surface,
+                    color: colors.textSub,
+                    fontSize: font.sub,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {copiedContact ? "복사됨 ✓" : "링크 복사"}
+                </button>
+              </div>
+            )}
+
+            {kind === "email" && (
+              <div>
+                <button
+                  onClick={() => window.open(`mailto:${contact}`, "_blank", "noopener")}
+                  style={{
+                    width: "100%",
+                    height: 50,
+                    borderRadius: 25,
+                    border: "none",
+                    background: colors.orange,
+                    color: "#FFFFFF",
+                    fontSize: font.body,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✉️ 메일 보내기
+                </button>
+                <p style={{ margin: "12px 0 0", fontSize: font.body, fontWeight: 600, color: colors.text, wordBreak: "break-all" }}>
+                  {contact}
+                </p>
+                <button
+                  onClick={copyContact}
+                  style={{
+                    marginTop: 8,
+                    height: 40,
+                    padding: "0 16px",
+                    borderRadius: 20,
+                    border: `1px solid ${colors.line}`,
+                    background: colors.surface,
+                    color: colors.textSub,
+                    fontSize: font.sub,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {copiedContact ? "복사됨 ✓" : "주소 복사"}
+                </button>
+              </div>
+            )}
+
+            {kind === "kakaoId" && (
+              <div>
+                <p style={{ margin: 0, fontSize: font.sub, color: colors.textSub }}>카카오톡 ID</p>
+                <p style={{ margin: "6px 0 0", fontSize: 22, fontWeight: 700, color: colors.text, wordBreak: "break-all" }}>
+                  {contact}
+                </p>
+                <button
+                  onClick={copyContact}
+                  style={{
+                    marginTop: 10,
+                    width: "100%",
+                    height: 50,
+                    borderRadius: 25,
+                    border: "none",
+                    background: colors.orange,
+                    color: "#FFFFFF",
+                    fontSize: font.body,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {copiedContact ? "복사됨 ✓" : "🆔 ID 복사하기"}
+                </button>
+                <p style={{ margin: "10px 0 0", fontSize: font.sub, color: colors.textSub }}>
+                  카카오톡 → 친구 → 친구 추가 → ID 검색에 붙여넣으면 돼요.
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </header>
 
