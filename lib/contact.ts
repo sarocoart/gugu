@@ -20,3 +20,19 @@ export function contactKind(contact: string | undefined): ContactKind {
 export function qrImageUrl(text: string): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(text)}`;
 }
+
+// 붙여넣기 청소기 — 카카오 등에서 복사할 때 딸려오는
+// 눈에 안 보이는 유령 글자(폭 없는 공백 등)와 앞뒤 공백을 지웁니다.
+export function cleanPaste(raw: string): string {
+  return (raw ?? "").replace(/[\u200B-\u200D\uFEFF\u2060\u00A0]/g, "").trim();
+}
+
+// 링크 정리기 — 청소한 다음, "pf.kakao.com/..." 처럼 앞머리가 없으면
+// https:// 를 알아서 붙여줍니다. (고객이 어떻게 붙여넣어도 되도록)
+export function normalizeLink(raw: string): string {
+  const s = cleanPaste(raw);
+  if (s === "") return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^[\w-]+(\.[\w-]+)+([\/?#].*)?$/i.test(s)) return `https://${s}`;
+  return s;
+}

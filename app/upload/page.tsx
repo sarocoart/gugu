@@ -10,7 +10,7 @@ import { colors, font } from "@/lib/theme";
 import { fetchApp, fetchMyApps, insertApp, updateApp, fetchMyPhone, saveMyPhone } from "@/lib/catalog";
 import { getCurrentUser, type GuguUser } from "@/lib/supabase";
 import Field from "@/components/FormField";
-import { contactKind, type ContactKind } from "@/lib/contact";
+import { contactKind, cleanPaste, normalizeLink, type ContactKind } from "@/lib/contact";
 
 // 고른 그림 파일을 카드에 알맞은 크기로 줄여서 돌려줍니다.
 // (큰 사진을 그대로 저장하면 브라우저 저장 공간이 금방 차서, 자동으로 줄여요)
@@ -160,17 +160,22 @@ function UploadContent() {
   const submit = async () => {
     if (title.trim() === "") return setError("작품 이름을 적어 주세요.");
     if (maker.trim() === "") return setError("만든 사람 이름을 적어 주세요.");
-    if (url.trim() !== "" && !/^https?:\/\//.test(url.trim())) {
-      return setError("주소는 https:// 로 시작해야 해요.");
+    // 붙여넣은 주소는 알아서 청소·정리합니다 (유령 글자 제거, https:// 자동 붙이기).
+    // 고객이 어떤 모양으로 붙여넣어도 최대한 받아주고, 정리된 값을 저장해요.
+    const urlClean = normalizeLink(url);
+    if (urlClean !== url) setUrl(urlClean);
+    if (urlClean !== "" && !/^https?:\/\//.test(urlClean)) {
+      return setError("실행 주소가 주소 모양이 아니에요. 예: https://내작품주소");
     }
-    const c = contact.trim();
+    const c = contactMethod === "link" ? normalizeLink(contact) : cleanPaste(contact);
+    if (c !== contact) setContact(c);
     if (c !== "" && contactMethod === "link" && !/^https?:\/\//.test(c)) {
-      return setError("채팅 링크는 https:// 로 시작해야 해요. 오픈채팅 방의 '링크 복사'를 붙여넣어 주세요.");
+      return setError("채팅 링크가 주소 모양이 아니에요. 오픈채팅 방(또는 채널)의 '링크 복사'로 복사해서 붙여넣어 주세요.");
     }
     if (c !== "" && contactMethod === "email" && !c.includes("@")) {
       return setError("이메일 주소를 확인해 주세요. @가 들어가야 해요.");
     }
-    const ph = phone.trim();
+    const ph = cleanPaste(phone);
     if (ph === "") return setError("전화번호를 적어 주세요. 관리자만 볼 수 있어요.");
     if (!/^[0-9+\-() ]{8,20}$/.test(ph)) {
       return setError("전화번호를 확인해 주세요. 숫자와 - 만 적으면 돼요. 예: 010-1234-5678");
@@ -198,10 +203,10 @@ function UploadContent() {
           category,
           emoji: catIcon,
           image: image || undefined,
-          url: url.trim(),
+          url: urlClean,
           maker: maker.trim(),
           tags: tags.length > 0 ? tags : undefined,
-          contact: contact.trim() || undefined,
+          contact: c || undefined,
         });
         if (!ok) return setError("저장하지 못했어요. 내 작품이 맞는지, 로그인 상태인지 확인해 주세요.");
         router.push("/nest");
@@ -216,10 +221,10 @@ function UploadContent() {
       category,
       emoji: catIcon,
       image: image || undefined,
-      url: url.trim(),
+      url: urlClean,
       maker: maker.trim(),
       tags: tags.length > 0 ? tags : undefined,
-      contact: contact.trim() || undefined,
+      contact: c || undefined,
       createdAt: Date.now(),
     };
     const ok = await insertApp(newApp);
