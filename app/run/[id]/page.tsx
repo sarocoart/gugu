@@ -31,10 +31,10 @@ export default function RunPage({ params }: { params: { id: string } }) {
     };
   }, [params.id]);
 
-  // 돌아가기 — 직전 화면으로. (링크로 바로 들어온 경우엔 홈으로)
+  // 돌아가기 — 항상 이 작품의 소개 화면으로 갑니다.
+  // (메이커 홈·공유 버튼과 아래 추천 작품까지 한 번에 보여서 구경이 이어져요)
   const goBack = () => {
-    if (window.history.length > 1) router.back();
-    else router.push("/");
+    router.replace(`/play/${params.id}`);
   };
 
   return (

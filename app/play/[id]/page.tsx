@@ -226,6 +226,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             style={{
               position: "relative",
               maxWidth: 720,
+              height: 480,
               margin: "18px auto 0",
               borderRadius: 20,
               overflow: "hidden",
@@ -233,14 +234,17 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               background: colors.surface,
             }}
           >
+            {/* 미리보기 창을 살짝 크게 만들어 가장자리를 잘라내면
+                안쪽 스크롤 막대가 화면 밖으로 밀려나 안 보입니다 */}
             <iframe
               src={app.url}
               title={`${app.title} 미리보기`}
               tabIndex={-1}
+              scrolling="no"
               style={{
                 display: "block",
-                width: "100%",
-                height: 480,
+                width: "calc(100% + 24px)",
+                height: 504,
                 border: "none",
                 pointerEvents: "none", // 미리보기 전용 — 안쪽 스크롤 방지
                 background: colors.surface,
