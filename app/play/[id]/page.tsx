@@ -203,9 +203,6 @@ export default function PlayPage({ params }: { params: { id: string } }) {
           <div style={{ maxWidth: 420, margin: "0 auto" }}>
             <RunButton wide label={`🚀 ${labels.runNewTab}`} onClick={goRun} />
           </div>
-          <p style={{ margin: "10px 0 0", fontSize: font.sub, color: colors.textSub }}>
-            👀 아래로 내리면 <b>미리보기</b>와 <b>추천 작품</b>이 이어져요 ⬇
-          </p>
 
           {/* 한 줄 소개 — 가운데 정렬, 잘 보이게 */}
           {app.desc && (
@@ -230,16 +227,17 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             style={{
               position: "relative",
               maxWidth: 720,
-              height: 480,
-              margin: "18px auto 0",
+              height: 300,
+              margin: "16px auto 0",
               borderRadius: 20,
               overflow: "hidden",
               border: `1px solid ${colors.line}`,
               background: colors.surface,
             }}
           >
-            {/* 미리보기 속 화면을 아주 길게(1600) 만들어 두면 게임 내용이 전부 들어가서
-                스크롤 막대 자체가 생기지 않습니다. 겉 상자(480)가 위쪽만 보여줘요. */}
+            {/* 미리보기는 게임 화면을 절반 크기로 줄여 보여줍니다 (미니어처).
+                상자가 낮아져서(300) 아래 추천 작품이 자연스럽게 함께 보여요.
+                오른쪽 여유분(+36px)은 게임이 그리는 스크롤 막대를 잘라내는 역할이에요. */}
             <iframe
               src={app.url}
               title={`${app.title} 미리보기`}
@@ -247,9 +245,11 @@ export default function PlayPage({ params }: { params: { id: string } }) {
               scrolling="no"
               style={{
                 display: "block",
-                width: "100%",
-                height: 1600,
+                width: "calc(200% + 36px)",
+                height: 640,
                 border: "none",
+                transform: "scale(0.5)",
+                transformOrigin: "top left",
                 pointerEvents: "none", // 미리보기 전용 — 안쪽 스크롤 방지
                 background: colors.surface,
               }}
