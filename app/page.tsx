@@ -50,11 +50,8 @@ function HomeContent() {
       <p
         style={{
           maxWidth: 560,
-          margin: "0 auto 14px",
-          padding: "11px 18px",
-          borderRadius: 22,
-          border: `1.5px solid ${colors.orangeSoft}`,
-          background: colors.surface,
+          margin: "0 auto 12px",
+          padding: "0 8px",
           color: colors.text,
           fontSize: font.body,
           fontWeight: 600,
