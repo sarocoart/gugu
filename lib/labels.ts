@@ -10,6 +10,7 @@ export const labels = {
   follow: "단골",
   run: "GO!",
   runNewTab: "크게 하기",
+  homeTagline: "👀 눈과 두뇌가 즐거운 인지 놀이 게임 모음 ✨",
   save: "담기",
   savedDone: "담았어요",
   unsave: "담기 취소",

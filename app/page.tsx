@@ -45,6 +45,25 @@ function HomeContent() {
 
   return (
     <div style={{ padding: "16px 16px 24px" }}>
+      {/* 서비스 소개 배지 — 처음 온 사람에게 "여긴 뭐 하는 곳"을 한 줄로 알려줍니다.
+          문구는 labels.ts의 homeTagline 한 줄만 고치면 바뀌어요. */}
+      <p
+        style={{
+          maxWidth: 560,
+          margin: "0 auto 14px",
+          padding: "11px 18px",
+          borderRadius: 22,
+          border: `1.5px solid ${colors.orangeSoft}`,
+          background: colors.surface,
+          color: colors.text,
+          fontSize: font.body,
+          fontWeight: 600,
+          textAlign: "center",
+          lineHeight: 1.5,
+        }}
+      >
+        {labels.homeTagline}
+      </p>
       <input
         value={query}
         onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
