@@ -370,12 +370,12 @@ function UploadContent() {
               cursor: "pointer",
             }}
           >
-            📷 게임/앱 화면 그림 고르기
+            📷 작품 화면 그림 고르기
             <input type="file" accept="image/*" onChange={pickImage} style={{ display: "none" }} />
           </label>
         )}
         <p style={{ margin: "6px 2px 0", fontSize: font.sub, color: colors.textSub }}>
-          게임 화면을 캡처한 그림을 넣으면 카드에 크게 보여요. 없으면 종류 아이콘이 대신 나와요.
+          작품 화면을 캡처한 그림을 넣으면 카드에 크게 보여요. 없으면 종류 아이콘이 대신 나와요.
         </p>
       </div>
 
