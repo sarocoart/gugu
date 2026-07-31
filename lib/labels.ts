@@ -31,7 +31,11 @@ export const labels = {
   allCategory: "전체",
 } as const;
 
-// 카테고리 — 추가/수정은 여기서만
+// 카테고리 — 추가/삭제/수정은 이 목록에서만 하면 됩니다 (관리자용 안내):
+//   추가: 아래에 { id: "영어이름", name: "화면 이름", icon: "이모지" } 한 줄을 넣으세요.
+//   삭제: 그 줄을 지우면 됩니다. (이미 그 종류로 올라간 작품은 사라지지 않고,
+//         카드에는 기본 아이콘으로 표시되며 "전체"에서 계속 보여요)
+//   원하면 아래 categoryTags에 추천 단어 한 줄을 같이 넣을 수 있어요 (없어도 동작).
 export const categories = [
   { id: "game", name: "게임", icon: "🎮" },
   { id: "test", name: "테스트", icon: "🔮" },
@@ -39,6 +43,7 @@ export const categories = [
   { id: "make", name: "만들기", icon: "🎨" },
   { id: "study", name: "공부", icon: "📚" },
   { id: "fun", name: "재미", icon: "😂" },
+  { id: "song", name: "노래", icon: "🎵" },
 ] as const;
 
 export type CategoryId = (typeof categories)[number]["id"];
@@ -55,13 +60,15 @@ export function runLabel(categoryId: string): string {
 
 // 추천 검색 단어 재료 — 올리기 화면에서 씁니다. 단어를 늘리고 싶으면 여기만 고치세요.
 // 1) 종류별 기본 단어
-export const categoryTags: Record<CategoryId, string[]> = {
+// 종류별 추천 단어 — 종류를 추가해도 여기는 채우지 않아도 됩니다 (선택 사항).
+export const categoryTags: Partial<Record<CategoryId, string[]>> = {
   game: ["게임", "놀이", "재미"],
   test: ["테스트", "심리", "궁합"],
   tool: ["도구", "생활", "편리"],
   make: ["만들기", "그림", "창작"],
   study: ["공부", "학습", "퀴즈"],
   fun: ["재미", "웃음", "심심풀이"],
+  song: ["노래", "음악", "시니어"],
 };
 
 // 2) 제목·소개에 이 단어가 들어 있으면 → 이 태그들을 추천

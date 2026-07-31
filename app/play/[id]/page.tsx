@@ -10,6 +10,7 @@ import { fetchApp, fetchAllApps, addServerView } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { features } from "@/lib/features";
 import { colors, font } from "@/lib/theme";
+import { embedFriendlyUrl } from "@/lib/embed";
 import { isSaved, toggleSaved } from "@/lib/storage";
 
 // 실행 화면 — 게임이 "미리보기"로 바로 보이고, 실제 플레이는 전체 화면 게임방에서.
@@ -239,7 +240,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
                 상자가 낮아져서(300) 아래 추천 작품이 자연스럽게 함께 보여요.
                 오른쪽 여유분(+36px)은 게임이 그리는 스크롤 막대를 잘라내는 역할이에요. */}
             <iframe
-              src={app.url}
+              src={embedFriendlyUrl(app.url)}
               title={`${app.title} 미리보기`}
               tabIndex={-1}
               scrolling="no"

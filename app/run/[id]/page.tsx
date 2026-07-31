@@ -8,6 +8,7 @@ import type { GuguApp } from "@/lib/data";
 import { fetchApp } from "@/lib/catalog";
 import { labels } from "@/lib/labels";
 import { colors, font } from "@/lib/theme";
+import { embedFriendlyUrl } from "@/lib/embed";
 import { markPlayed } from "@/lib/storage";
 
 // 전체 화면 게임방 — 게임이 화면 가득 열리고, 왼쪽 위 버튼으로 언제든 돌아갑니다.
@@ -103,7 +104,7 @@ export default function RunPage({ params }: { params: { id: string } }) {
         </div>
       ) : app && app.url ? (
         <iframe
-          src={app.url}
+          src={embedFriendlyUrl(app.url)}
           title={app.title}
           style={{ flex: 1, width: "100%", border: "none", background: colors.surface }}
         />
