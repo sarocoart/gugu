@@ -43,7 +43,7 @@ export const categories = [
   { id: "make", name: "만들기", icon: "🎨" },
   { id: "study", name: "공부", icon: "📚" },
   { id: "fun", name: "재미", icon: "😂" },
-  { id: "song", name: "노래", icon: "🎵" },
+  { id: "video", name: "영상", icon: "📺" },
 ] as const;
 
 export type CategoryId = (typeof categories)[number]["id"];
@@ -68,7 +68,7 @@ export const categoryTags: Partial<Record<CategoryId, string[]>> = {
   make: ["만들기", "그림", "창작"],
   study: ["공부", "학습", "퀴즈"],
   fun: ["재미", "웃음", "심심풀이"],
-  song: ["노래", "음악", "시니어"],
+  video: ["영상", "노래", "음악", "시니어"],
 };
 
 // 2) 제목·소개에 이 단어가 들어 있으면 → 이 태그들을 추천
